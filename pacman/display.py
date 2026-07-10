@@ -1,13 +1,11 @@
 import sys
 from pathlib import Path
+import pygame
+from animations.animation import Animation
+from classes.pacman import Pacman
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "sprietsheet"))
-
-import pygame
-
-from animations.animation import Animation
-from classes.pacman import Pacman
 
 SHEET_PATH = (
     ROOT / "sprietsheet" / "dbc1ie6-95c45f24-9ea6-462e-88bd-15f1a3d6e051.png"

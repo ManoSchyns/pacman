@@ -102,92 +102,14 @@ class Maze:
     # Pacman sera un peu plus petit que la taille des couloir *0.8
     def get_pacman_size(self) -> int:
         corridor_size: int = self._cell_size - self._thickness
-        return int(corridor_size * 0.75)
+        return int(corridor_size * 0.99)
 
     # Return les coordonnées du centre
     def get_center_maze(self) -> tuple[int, int]:
-        return (self._width * self._cell_size // 2,
-                self._heigth * self._cell_size // 2)
+        x_center: int = self._width // 2
+        y_center: int = self._heigth // 2
 
-
-if __name__ == "__main__":
-    pygame.init()
-
-    """
-    screen size:
-
-    Pour la width du lab
-    -> La width su screen = width * cell_size + epaisseur des walls
-    Pour la heigth su lab
-    -> la heigth du screen = height * cell_Size + epaisseur des walls
-    """
-    cell_size = 30
-    width = 15
-    height = 17
-
-    # Scrren du jeu
-    screen = pygame.display.set_mode((width * cell_size + 5,
-                                      height * cell_size + 5))
-    clock = pygame.time.Clock()
-    running = True
-
-    # Maze + récupération de sa surface
-    maze = Maze(width, height, cell_size)
-    screen.blit(maze.get_maze_surface(), (0, 0))
-
-    # Centre du lab
-    maze_center = maze.get_center_maze()
-
-    # Taille du pacman
-    pacman_size = maze.get_pacman_size()
-    center = (pacman_size // 2, pacman_size // 2)
-    radius = pacman_size // 2
-
-    # Exemple de pacman sans anim
-    pacman = pygame.Surface((pacman_size, pacman_size), pygame.SRCALPHA)
-    pygame.draw.circle(
-        pacman,
-        (255, 255, 0),
-        center,
-        radius
-        )
-    # set pacman au centre du lab
-    pac_man_pos = pacman.get_rect()
-    pac_man_pos.center = maze_center
-    screen.blit(pacman, pac_man_pos)
-
-    # on affiche
-    pygame.display.flip()
-
-    # mouvements du pacman
-    pacman_move = (0, 1)
-    while running:
-
-        # touches clavier
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                running = False
-            if event.type == pygame.KEYDOWN:
-                if event.key == pygame.K_UP:
-                    pacman_move = (0, -1)
-                if event.key == pygame.K_DOWN:
-                    pacman_move = (0, 1)
-                if event.key == pygame.K_RIGHT:
-                    pacman_move = (1, 0)
-                if event.key == pygame.K_LEFT:
-                    pacman_move = (-1, 0)
-
-        # test si on est pas dans un wall
-        pac_man_pos.x += pacman_move[0]
-        pac_man_pos.y += pacman_move[1]
-        if maze.check_collisions(pac_man_pos):
-            pac_man_pos.x -= pacman_move[0]
-            pac_man_pos.y -= pacman_move[1]
-
-        # On supprime ce qu'il y a a l'ecran et on le remet
-        screen.fill((0, 0, 0))
-        screen.blit(maze.get_maze_surface(), (0, 0))
-        screen.blit(pacman, pac_man_pos)
-        pygame.display.flip()
-        clock.tick(60)
-    pygame.quit()
+        while self._maze[y_center][x_center] == 15:
+            y_center += 1
+        return (x_center * self._cell_size + self._cell_size // 2,
+                    y_center * self._cell_size + self._cell_size // 2)

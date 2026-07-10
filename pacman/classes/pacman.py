@@ -1,6 +1,6 @@
 import pygame
 
-from classes.spritesheet import SpriteSheet
+from sprietsheet.classes.spritesheet import SpriteSheet
 
 
 class Pacman:
@@ -10,9 +10,10 @@ class Pacman:
     DOWN_INDICES = [21, 22]
     MERGED_DEATH_FRAME = 4
 
-    def __init__(self, sheet_path: str) -> None:
+    def __init__(self, sheet_path: str, size: int) -> None:
         sheet = SpriteSheet(sheet_path)
-        sprites = [image for _, image in sheet.auto_slice()]
+        sprites = [pygame.transform.scale(image, (size, size))
+                   for _, image in sheet.auto_slice()]
         left = [sprites[i] for i in self.LEFT_INDICES]
         right = [
             pygame.transform.flip(frame, True, False) for frame in left

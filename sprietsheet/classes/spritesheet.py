@@ -1,6 +1,6 @@
 import pygame
 
-from classes.bases import SpriteSheet as SpriteSheetBase
+from .bases import SpriteSheet as SpriteSheetBase
 
 
 class SpriteSheet(SpriteSheetBase):
