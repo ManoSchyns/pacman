@@ -6,6 +6,9 @@ class Maze:
 
     def __init__(self, width: int, height: int,
                  cell_size: int, seed: int = 0) -> None:
+        """
+        TODO: Peut etre essayer de calculer la cell_size en fonction de la taille de l'ecran ? Une limite ?
+        """
         self._cell_size = cell_size
         self._width = width
         self._heigth = height
@@ -102,7 +105,7 @@ class Maze:
     # Pacman sera un peu plus petit que la taille des couloir *0.8
     def get_pacman_size(self) -> int:
         corridor_size: int = self._cell_size - self._thickness
-        return int(corridor_size * 0.99)
+        return int(corridor_size * 0.7)
 
     # Return les coordonnées du centre
     def get_center_maze(self) -> tuple[int, int]:
@@ -113,3 +116,8 @@ class Maze:
             y_center += 1
         return (x_center * self._cell_size + self._cell_size // 2,
                     y_center * self._cell_size + self._cell_size // 2)
+    
+    # Return la derniere partie de surface utilisée
+    # A partir de ou on peut utiliser les pixel
+    def get_end_surface(self):
+        return self._heigth * self._cell_size + self._thickness + 10
