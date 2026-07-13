@@ -3,7 +3,6 @@ import pygame
 from .level import Level
 from player import Player
 
-
 class Game:
     """
     A chaque boucle du jeu
@@ -54,6 +53,54 @@ class Game:
                 return
             if exit_value == 0:
                 running = False
-            self.current_level += 1
+            else:
+                self.current_level += 1
             self.seed = random.randint(0, 2**32 - 1)
             level = None
+        if self.current_level == 10:
+           self.show_end_screen("Well Done !", screen)
+        else:
+            self.show_end_screen("Game Over", screen)
+
+    def show_end_screen(self, message: str, screen: pygame.Surface):
+        screen.fill((0, 0, 0))
+
+        font = pygame.font.Font("game/srcs/ARCADE_I.TTF", 80)
+        text = font.render(message, True, (255, 0, 0))
+        text_rect = text.get_rect(
+            center=(
+                screen.get_width() // 2,
+                screen.get_height() // 2 - 100
+            )
+        )
+        screen.blit(text, text_rect)
+
+        font = pygame.font.Font("game/srcs/ARCADE_I.TTF", 40)
+        text = font.render(f"Your score: {self.player.get_score()}", True, (255, 255, 0))
+        text_rect = text.get_rect(
+            center=(
+                screen.get_width() // 2,
+                screen.get_height() // 2
+            )
+        )
+        screen.blit(text, text_rect)
+
+        font = pygame.font.Font("game/srcs/ARCADE_I.TTF", 20)
+        text = font.render("Press any key to quit", True, (255, 255, 255))
+        text_rect = text.get_rect(
+            center=(
+                screen.get_width() // 2,
+                screen.get_height() // 2 + 150
+            )
+        )
+        screen.blit(text, text_rect)
+
+        pygame.display.flip()
+        running: bool = True
+        while running:
+             for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    running = False
+                if event.type == pygame.KEYDOWN:
+                    running = False
+

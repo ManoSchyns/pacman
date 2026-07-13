@@ -59,6 +59,9 @@ class Level:
                 if event.type == pygame.KEYDOWN:
                     if event.key == pygame.K_SPACE:
                         return 1
+                    if event.key == pygame.K_ESCAPE:
+                        if not self.waiting_screen(player):
+                            return -1
 
             self.pacman.handle_input()
 
@@ -70,6 +73,7 @@ class Level:
 
             # if collision avec bouboules -> score ++
 
+            player.increase_score(10)
             self.screen.fill((0, 0, 0))
             self.screen.blit(self.maze.get_maze_surface(), (0, 0))
             self.pacman.draw(self.screen)
@@ -106,7 +110,7 @@ class Level:
         rect = overlay.get_rect(center=self.screen.get_rect().center)
         self.screen.blit(overlay, rect)
 
-        text = font.render("Press any key to start", True, (255, 255, 255))
+        text = font.render("Press any key !", True, (255, 255, 255))
         text_rect = text.get_rect(center=self.maze_surface.get_rect().center)
         self.screen.blit(text, text_rect)
 
