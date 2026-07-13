@@ -26,7 +26,8 @@ class PacmanPlayer:
                  is_open: Callable[[tuple[int, int], str], bool]) -> None:
         self.sprite = Pacman(str(SHEET_PATH), size)
         self.animations = {
-            action: Animation(self.sprite.frames(action))
+            action: Animation(self.sprite.frames(action),
+                              loop=action != "death")
             for action in self.sprite.actions()
         }
 

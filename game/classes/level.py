@@ -146,6 +146,13 @@ class Level:
             for ghost in self.ghosts:
                 ghost.update(dt, context)
                 ghost.draw(self.screen)
+
+            if any(ghost.rect.colliderect(self.pacman.rect)
+                   for ghost in self.ghosts):
+                if not self.play_death_animation(player):
+                    return -1
+                return 0
+
             self.show_information(player)
 
             pygame.display.flip()
@@ -157,6 +164,27 @@ class Level:
             # Animate end of time
             return 0
         return 1
+
+    def play_death_animation(self, player: Player) -> bool:
+        death = self.pacman.animations["death"]
+        death.reset()
+        clock: pygame.time.Clock = pygame.time.Clock()
+
+        while not death.finished:
+            dt = clock.tick(60) / 1000
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    return False
+            death.update(dt)
+
+            self.screen.fill((0, 0, 0))
+            self.screen.blit(self.maze.get_maze_surface(), (0, 0))
+            self.screen.blit(death.current_frame(), self.pacman.rect)
+            self.show_information(player)
+            pygame.display.flip()
+
+        pygame.time.wait(500)
+        return True
 
     def waiting_screen(self, player: Player) -> bool:
         """

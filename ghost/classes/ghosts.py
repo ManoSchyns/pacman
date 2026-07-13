@@ -2,20 +2,20 @@ from .ghost import Ghost
 
 
 class Blinky(Ghost):
-    START_INDEX = 23
+    START_INDEX = 24
     COLOR = "red"
 
 
 class Pinky(Ghost):
-    START_INDEX = 35
+    START_INDEX = 36
     COLOR = "pink"
 
 
 class Inky(Ghost):
-    START_INDEX = 46
+    START_INDEX = 47
     COLOR = "cyan"
 
 
 class Clyde(Ghost):
-    START_INDEX = 57
+    START_INDEX = 58
     COLOR = "orange"

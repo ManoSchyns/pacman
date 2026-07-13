@@ -63,7 +63,8 @@ class SpriteSheet(SpriteSheetBase):
             for extra in bounds[1:]:
                 rect = rect.union(extra)
             rects.append(rect)
-        return self._sort_reading_order(self._merge_overlapping(rects))
+        merged = self._merge_overlapping(rects)
+        return self._sort_reading_order(self._split_wide_rects(merged))
 
     def auto_slice(
         self, min_pixels: int = 4
@@ -74,6 +75,44 @@ class SpriteSheet(SpriteSheetBase):
     @staticmethod
     def scale(image: pygame.Surface, factor: float) -> pygame.Surface:
         return pygame.transform.scale_by(image, factor)
+
+    def _split_wide_rects(
+        self, rects: list[pygame.Rect]
+    ) -> list[pygame.Rect]:
+        if not rects:
+            return rects
+        widths = sorted(rect.width for rect in rects)
+        heights = sorted(rect.height for rect in rects)
+        median_width = widths[len(widths) // 2]
+        median_height = heights[len(heights) // 2]
+
+        result: list[pygame.Rect] = []
+        for rect in rects:
+            if (rect.width >= 1.8 * median_width
+                    and rect.height <= 1.5 * median_height):
+                result.extend(self._split_at_seam(rect))
+            else:
+                result.append(rect)
+        return result
+
+    def _split_at_seam(self, rect: pygame.Rect) -> list[pygame.Rect]:
+        third = rect.width // 3
+        candidates = range(rect.x + third, rect.x + rect.width - third)
+        seam = min(candidates,
+                   key=lambda column: self._column_fill(rect, column))
+        if self._column_fill(rect, seam) > 2:
+            return [rect]
+        left = pygame.Rect(rect.x, rect.y, seam - rect.x, rect.height)
+        right = pygame.Rect(seam + 1, rect.y,
+                            rect.right - seam - 1, rect.height)
+        return [left, right]
+
+    def _column_fill(self, rect: pygame.Rect, column: int) -> int:
+        count = 0
+        for y in range(rect.y, rect.y + rect.height):
+            if not self.is_background(self.sheet.get_at((column, y))):
+                count += 1
+        return count
 
     @staticmethod
     def _merge_overlapping(rects: list[pygame.Rect]) -> list[pygame.Rect]:
