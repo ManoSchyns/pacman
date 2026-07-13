@@ -41,12 +41,12 @@ class Game:
         while running and self.current_level < 10:
             curr_level_data = self.level_list[self.current_level]
             
-            level = Level(curr_level_data[0], curr_level_data[1], self.seed,
+            level = Level(curr_level_data[0], curr_level_data[1], screen, self.seed,
                           self.number_pacgum, self.points_per_pacgum,
                           self.points_per_super_pacgum, self.points_per_ghost,
                           self.level_max_time)
 
-            exit_value = level.play(screen, self.player)
+            exit_value = level.play(self.player)
             if exit_value == -1:
                 return
             if exit_value == 0:

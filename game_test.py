@@ -2,13 +2,14 @@ from game.classes import Game
 from player.player import Player
 import pygame
 
+SCREEN_WIDTH = 1000
+SCREEN_HEIGTH = 500
+
 if __name__ == "__main__":
     pygame.init()
-    screen_width = 1000
-    screen_heigth = 1000
     # Scrren du jeu
-    screen = pygame.display.set_mode((screen_width,
-                                      screen_heigth + 10))
+    screen = pygame.display.set_mode((SCREEN_WIDTH,
+                                      SCREEN_HEIGTH + 10))
     level_list = [(15,17),
                   (20,21),
                   (30,30),

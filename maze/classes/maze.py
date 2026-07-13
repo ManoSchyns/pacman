@@ -5,11 +5,14 @@ import pygame as pygame
 class Maze:
 
     def __init__(self, width: int, height: int,
-                 cell_size: int, seed: int = 0) -> None:
+                 screen,
+                 seed: int = 0) -> None:
         """
         TODO: Peut etre essayer de calculer la cell_size en fonction de la taille de l'ecran ? Une limite ?
         """
-        self._cell_size = cell_size
+        self._cell_size = min(screen.get_width() // width,
+    (screen.get_height() - 50) // height
+)
         self._width = width
         self._heigth = height
         self._thickness = 5
@@ -19,8 +22,8 @@ class Maze:
         self._maze_gen = MazeGenerator(size=(width, height), seed=seed)
         self._maze = self._maze_gen.maze
         self._maze_surface = pygame.Surface((
-            width * cell_size + self._thickness,
-            height * cell_size + self._thickness))
+            width * self._cell_size + self._thickness,
+            height * self._cell_size + self._thickness))
         self._gen_maze_surface()
 
     """

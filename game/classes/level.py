@@ -15,11 +15,12 @@ class Level:
     Chaque level possede 4 super pacgums aux 4 coins
     Chaque levle a 4 ghost aux 4 coins
     """
-    def __init__(self, width: int, height: int, seed: int,
+    def __init__(self, width: int, height: int, screen, seed: int,
                  number_pacgum: int,
                  points_per_pacgum: int, points_per_super_pacgum: int,
                  points_per_ghost: int, level_max_time: int):
-        self.maze = Maze(width, height, 30, seed)
+        self.screen = screen
+        self.maze = Maze(width, height, screen,seed)
         self.maze_surface = self.maze.get_maze_surface()
 
         self.pacman = PacmanPlayer(self.maze.get_center_maze(),
@@ -40,14 +41,15 @@ class Level:
     Return 0 si le player a perdu
     Return 1 si le lvl est gagné
     """
-    def play(self, screen, player) -> int:
+    def play(self, player) -> int:
         clock = pygame.time.Clock()
 
-        screen.blit(self.maze_surface, (0, 0))
 
-        pygame.display.flip()
+        if not self.waiting_screen(player):
+            return -1
         while (player.get_lives() > 0 and
-               self.number_pacgum > 0 and self.number_super_pacgum > 0):
+               self.number_pacgum > 0 and self.number_super_pacgum > 0
+               and self.current_time - self.get_time_s()):
 
             dt = clock.tick(60)/1000
 
@@ -69,20 +71,53 @@ class Level:
 
             # if collision avec bouboules -> score ++
 
-            screen.fill((0, 0, 0))
-            screen.blit(self.maze.get_maze_surface(), (0, 0))
-            self.pacman.draw(screen)
-            self.show_information(screen, player)
+            self.screen.fill((0, 0, 0))
+            self.screen.blit(self.maze.get_maze_surface(), (0, 0))
+            self.pacman.draw(self.screen)
+            self.show_information(player)
 
             pygame.display.flip()
+
             clock.tick(60)
 
         if player.get_lives() == 0:
             # Animate death ??
             return 0
+        if self.current_time - self.get_time_s() <= 0:
+            # Animate end of time
+            return 0
         return 1
     
-    def show_information(self, screen, player):
+    def waiting_screen(self, player) -> bool:
+        self.screen.fill((0, 0, 0))
+        self.screen.blit(self.maze_surface, (0, 0))
+        self.pacman.draw(self.screen)
+        self.show_information(player)
+
+        font = pygame.font.SysFont(None, 20)
+
+        overlay = pygame.Surface((self.screen.get_width(), self.screen.get_height()), pygame.SRCALPHA)
+        overlay.fill((20, 20, 20, 180))  # RGB + Alpha
+
+        rect = overlay.get_rect(center=self.screen.get_rect().center)
+        self.screen.blit(overlay, rect)
+
+        text = font.render("Press any key to start", True, (255, 255, 255))
+        text_rect = text.get_rect(center=self.maze_surface.get_rect().center)
+        self.screen.blit(text, text_rect)
+
+        pygame.display.flip()
+        running: bool = True
+        while (running):
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    return False
+                if event.type == pygame.KEYDOWN:
+                    return True
+
+        return False
+
+    def show_information(self, player):
         font = pygame.font.SysFont(None, 20)
 
         y = self.maze.get_end_surface()
@@ -104,9 +139,9 @@ class Level:
             True,
             (255, 255, 255)
         )
-        screen.blit(score_text, (0, y))
-        screen.blit(lives_text, (100, y))
-        screen.blit(time_text, (200, y))
+        self.screen.blit(score_text, (0, y))
+        self.screen.blit(lives_text, (100, y))
+        self.screen.blit(time_text, (200, y))
 
     # return en seconde le temps écoulé depuis le début du niveau
     def get_time_s(self):
