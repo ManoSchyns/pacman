@@ -14,7 +14,7 @@ SHEET_PATH = (
 
 class PacmanPlayer:
 
-    def __init__(self, position: tuple[int, int], size: int):
+    def __init__(self, position: tuple[int, int], size: int) -> None:
         self.speed = (0, 2)
 
         self.sprite = Pacman(SHEET_PATH, size)

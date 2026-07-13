@@ -4,18 +4,18 @@ class Player:
         self.name: str | None = None
         self.score = 0
         self.lives = lives
-    
-    def get_lives(self):
+
+    def get_lives(self) -> int:
         return self.lives
-    
-    def lose_lives(self):
+
+    def lose_lives(self) -> None:
         self.lives -= 1
 
-    def increase_score(self, score):
+    def increase_score(self, score: int) -> None:
         self.score += score
-    
-    def get_score(self):
+
+    def get_score(self) -> int:
         return self.score
-    
-    def show(self):
+
+    def show(self) -> None:
         print(f"Player has score {self.score} and lives: {self.lives}")
