@@ -1,6 +1,9 @@
 from mazegenerator import MazeGenerator
 import pygame as pygame
 
+NORTH: int = 1
+EAST: int = 2
+
 
 class Maze:
 
@@ -107,6 +110,9 @@ class Maze:
         corridor_size: int = self._cell_size - self._thickness
         return int(corridor_size * 0.7)
 
+    def get_cell_size(self) -> int:
+        return self._cell_size
+
     # Return les coordonnées du centre
     def get_center_maze(self) -> tuple[int, int]:
         x_center: int = self._width // 2
@@ -116,6 +122,61 @@ class Maze:
             y_center += 1
         return (x_center * self._cell_size + self._cell_size // 2,
                 y_center * self._cell_size + self._cell_size // 2)
+
+    def is_open(self, cell: tuple[int, int], direction: str) -> bool:
+        x, y = cell
+        if direction == "up":
+            target = (x, y - 1)
+            blocked = self._wall_bit(x, y, NORTH)
+        elif direction == "down":
+            target = (x, y + 1)
+            blocked = self._wall_bit(x, y + 1, NORTH)
+        elif direction == "left":
+            target = (x - 1, y)
+            blocked = self._wall_bit(x - 1, y, EAST)
+        else:
+            target = (x + 1, y)
+            blocked = self._wall_bit(x, y, EAST)
+
+        target_x, target_y = target
+        if not (0 <= target_x < self._width
+                and 0 <= target_y < self._heigth):
+            return False
+        if blocked:
+            return False
+        return bool(self._maze[target_y][target_x] != 15)
+
+    def _wall_bit(self, x: int, y: int, bit: int) -> bool:
+        if not (0 <= x < self._width and 0 <= y < self._heigth):
+            return True
+        return bool(self._maze[y][x] & bit)
+
+    def get_ghost_spawns(self) -> list[tuple[int, int]]:
+        corners = [(0, 0),
+                   (self._width - 1, 0),
+                   (0, self._heigth - 1),
+                   (self._width - 1, self._heigth - 1)]
+
+        spawns: list[tuple[int, int]] = []
+        for corner_x, corner_y in corners:
+            x, y = self._closest_free_cell(corner_x, corner_y)
+            spawns.append((x * self._cell_size + self._cell_size // 2,
+                           y * self._cell_size + self._cell_size // 2))
+        return spawns
+
+    def _closest_free_cell(self, x: int, y: int) -> tuple[int, int]:
+        step_x = 1 if x == 0 else -1
+        step_y = 1 if y == 0 else -1
+
+        for dist in range(max(self._width, self._heigth)):
+            new_x = x + dist * step_x
+            if 0 <= new_x < self._width and self._maze[y][new_x] != 15:
+                return (new_x, y)
+
+            new_y = y + dist * step_y
+            if 0 <= new_y < self._heigth and self._maze[new_y][x] != 15:
+                return (x, new_y)
+        return (x, y)
 
     # Return la derniere partie de surface utilisée
     # A partir de ou on peut utiliser les pixel

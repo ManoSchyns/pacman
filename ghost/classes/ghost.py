@@ -1,6 +1,6 @@
 import pygame
 
-from classes.spritesheet import SpriteSheet
+from sprietsheet.classes.spritesheet import SpriteSheet
 
 
 class Ghost:

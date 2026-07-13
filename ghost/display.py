@@ -1,12 +1,12 @@
 import sys
-import pygame
 from pathlib import Path
-from animations.animation import Animation
-from classes.ghost import Ghost
-from classes.ghosts import Blinky, Clyde, Inky, Pinky
 
 ROOT = Path(__file__).resolve().parents[1]
-sys.path.insert(0, str(ROOT / "sprietsheet"))
+sys.path.insert(0, str(ROOT))
+
+import pygame  # noqa: E402
+from ghost.animations import Animation  # noqa: E402
+from ghost.classes import Blinky, Clyde, Ghost, Inky, Pinky  # noqa: E402
 
 SHEET_PATH = (
     ROOT / "sprietsheet" / "dbc1ie6-95c45f24-9ea6-462e-88bd-15f1a3d6e051.png"

@@ -1,7 +1,20 @@
 import pygame
+from ghost.classes import (AmbushBrain, Blinky, ChaseContext, Clyde,
+                           CowardBrain, FlankBrain, GhostBrain, GhostPlayer,
+                           Inky, Pinky)
 from maze.classes import Maze
 from pacman.classes import PacmanPlayer
+from pacman.classes.movement import GridMovement
 from player import Player
+
+GHOST_BASE_SPEED = 3.0
+BLINKY_SPEED_PER_LEVEL = 0.25
+BLINKY_MAX_SPEED = 4.5
+PINKY_SPEED_PER_LEVEL = 0.05
+PINKY_MAX_SPEED = 4.2
+PINKY_BASE_RANDOM_TURN = 0.25
+PINKY_RANDOM_TURN_DROP_PER_LEVEL = 0.02
+PINKY_MIN_RANDOM_TURN = 0.05
 
 
 class Level:
@@ -24,8 +37,48 @@ class Level:
         self.maze = Maze(width, height, screen, seed)
         self.maze_surface = self.maze.get_maze_surface()
 
+        cell_size = self.maze.get_cell_size()
         self.pacman = PacmanPlayer(self.maze.get_center_maze(),
-                                   self.maze.get_pacman_size())
+                                   self.maze.get_pacman_size(),
+                                   cell_size * 4, cell_size,
+                                   self.maze.is_open)
+
+        blinky_speed = cell_size * min(
+            GHOST_BASE_SPEED + BLINKY_SPEED_PER_LEVEL * (curr_level - 1),
+            BLINKY_MAX_SPEED)
+        pinky_speed = cell_size * min(
+            GHOST_BASE_SPEED + PINKY_SPEED_PER_LEVEL * (curr_level - 1),
+            PINKY_MAX_SPEED)
+        pinky_random_turn = max(
+            PINKY_BASE_RANDOM_TURN
+            - PINKY_RANDOM_TURN_DROP_PER_LEVEL * (curr_level - 1),
+            PINKY_MIN_RANDOM_TURN)
+
+        self.ghosts: list[GhostPlayer] = []
+        for ghost_class, spawn in zip([Blinky, Pinky, Inky, Clyde],
+                                      self.maze.get_ghost_spawns()):
+            movement = None
+            brain: GhostBrain | None = None
+            speed = 0.0
+            if ghost_class is Blinky:
+                brain = GhostBrain()
+                speed = blinky_speed
+            elif ghost_class is Pinky:
+                brain = AmbushBrain(pinky_random_turn)
+                speed = pinky_speed
+            elif ghost_class is Inky:
+                brain = FlankBrain()
+                speed = blinky_speed
+            elif ghost_class is Clyde:
+                corner = (spawn[0] // cell_size, spawn[1] // cell_size)
+                brain = CowardBrain(corner)
+                speed = pinky_speed
+            if brain is not None:
+                movement = GridMovement(spawn, cell_size, speed,
+                                        self.maze.is_open)
+            self.ghosts.append(GhostPlayer(ghost_class, spawn,
+                                           self.maze.get_pacman_size(),
+                                           movement, brain))
 
         self.number_pacgum = number_pacgum
         self.number_super_pacgum = 4
@@ -75,8 +128,6 @@ class Level:
             self.pacman.handle_input()
 
             self.pacman.move(dt)
-            if self.maze.check_collisions(self.pacman.rect):
-                self.pacman.go_back()
 
             # if collision avec fantomes -> lives -= 1
 
@@ -86,11 +137,18 @@ class Level:
             self.screen.fill((0, 0, 0))
             self.screen.blit(self.maze.get_maze_surface(), (0, 0))
             self.pacman.draw(self.screen)
+            pacman_cell = self.pacman.movement.cell()
+            blinky_movement = self.ghosts[0].movement
+            context = ChaseContext(
+                pacman_cell,
+                self.pacman.movement.current_direction,
+                blinky_movement.cell() if blinky_movement else pacman_cell)
+            for ghost in self.ghosts:
+                ghost.update(dt, context)
+                ghost.draw(self.screen)
             self.show_information(player)
 
             pygame.display.flip()
-
-            clock.tick(60)
 
         if player.get_lives() == 0:
             # Animate death ??
@@ -108,6 +166,8 @@ class Level:
         self.screen.fill((0, 0, 0))
         self.screen.blit(self.maze_surface, (0, 0))
         self.pacman.draw(self.screen)
+        for ghost in self.ghosts:
+            ghost.draw(self.screen)
         self.show_information(player)
 
         font = pygame.font.SysFont(None, 20)

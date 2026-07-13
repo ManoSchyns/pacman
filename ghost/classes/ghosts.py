@@ -1,4 +1,4 @@
-from classes.ghost import Ghost
+from .ghost import Ghost
 
 
 class Blinky(Ghost):
