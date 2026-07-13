@@ -48,7 +48,7 @@ class Level:
             return -1
         while (player.get_lives() > 0 and
                self.number_pacgum > 0 and self.number_super_pacgum > 0
-               and self.current_time - self.get_time_s()):
+               and self.current_time - self.get_time_s() > 0):
 
             dt = clock.tick(60)/1000
 
@@ -93,7 +93,7 @@ class Level:
 
     def waiting_screen(self, player: Player) -> bool:
         """
-        Ecran d'attente. Tant que l'utilisateur 
+        Ecran d'attente. Tant que l'utilisateur
         n'appuie pas sur une touche, on attend
         """
         self.screen.fill((0, 0, 0))

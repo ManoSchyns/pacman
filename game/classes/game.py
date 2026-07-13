@@ -2,6 +2,8 @@ import random
 import pygame
 from .level import Level
 from player import Player
+from game.srcs import TextInput
+
 
 class Game:
     """
@@ -58,15 +60,23 @@ class Game:
             self.seed = random.randint(0, 2**32 - 1)
             level = None
         if self.current_level == 10:
-           self.show_end_screen("Well Done !", screen)
+            self.show_end_screen("Well Done !", screen)
         else:
             self.show_end_screen("Game Over", screen)
 
+    """
+    Affiche l'écran de fin avec le score du joueur
+    et Recupère le nom de l'utilisateur
+    """
     def show_end_screen(self, message: str, screen: pygame.Surface):
         screen.fill((0, 0, 0))
 
+        color: tuple[int, int, int] = (0, 128, 0)
+        if "Over" in message:
+            color = (255, 0, 0)
+
         font = pygame.font.Font("game/srcs/ARCADE_I.TTF", 80)
-        text = font.render(message, True, (255, 0, 0))
+        text = font.render(message, True, color)
         text_rect = text.get_rect(
             center=(
                 screen.get_width() // 2,
@@ -76,7 +86,8 @@ class Game:
         screen.blit(text, text_rect)
 
         font = pygame.font.Font("game/srcs/ARCADE_I.TTF", 40)
-        text = font.render(f"Your score: {self.player.get_score()}", True, (255, 255, 0))
+        text = font.render(f"Your score: {self.player.get_score()}",
+                           True, (255, 255, 0))
         text_rect = text.get_rect(
             center=(
                 screen.get_width() // 2,
@@ -86,7 +97,8 @@ class Game:
         screen.blit(text, text_rect)
 
         font = pygame.font.Font("game/srcs/ARCADE_I.TTF", 20)
-        text = font.render("Press any key to quit", True, (255, 255, 255))
+        text = font.render("Enter your name and press enter to quit",
+                           True, (255, 255, 255))
         text_rect = text.get_rect(
             center=(
                 screen.get_width() // 2,
@@ -95,12 +107,21 @@ class Game:
         )
         screen.blit(text, text_rect)
 
+        text_input = TextInput((screen.get_width() // 2 - 200,
+                                screen.get_height() // 2 + 40,
+                                400, 40), screen)
+        text_input.draw()
         pygame.display.flip()
         running: bool = True
         while running:
-             for event in pygame.event.get():
+            for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     running = False
                 if event.type == pygame.KEYDOWN:
+                    if event.key == pygame.K_RETURN:
+                        self.player.name = text_input.get_value()
+                        if not self.player.name == "":
+                            running = False
+                if not text_input.handle_input(event):
                     running = False
-
+        print(self.player.name)
