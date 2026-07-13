@@ -5,8 +5,11 @@ import pygame as pygame
 class Maze:
 
     def __init__(self, width: int, height: int,
-                 cell_size: int, seed: int = 0) -> None:
-        self._cell_size = cell_size
+                 screen: pygame.Surface,
+                 seed: int = 0) -> None:
+
+        self._cell_size = min(screen.get_width() // width,
+                              (screen.get_height() - 50) // height)
         self._width = width
         self._heigth = height
         self._thickness = 5
@@ -16,8 +19,8 @@ class Maze:
         self._maze_gen = MazeGenerator(size=(width, height), seed=seed)
         self._maze = self._maze_gen.maze
         self._maze_surface = pygame.Surface((
-            width * cell_size + self._thickness,
-            height * cell_size + self._thickness))
+            width * self._cell_size + self._thickness,
+            height * self._cell_size + self._thickness))
         self._gen_maze_surface()
 
     """
@@ -102,7 +105,7 @@ class Maze:
     # Pacman sera un peu plus petit que la taille des couloir *0.8
     def get_pacman_size(self) -> int:
         corridor_size: int = self._cell_size - self._thickness
-        return int(corridor_size * 0.99)
+        return int(corridor_size * 0.7)
 
     # Return les coordonnées du centre
     def get_center_maze(self) -> tuple[int, int]:
@@ -112,4 +115,9 @@ class Maze:
         while self._maze[y_center][x_center] == 15:
             y_center += 1
         return (x_center * self._cell_size + self._cell_size // 2,
-                    y_center * self._cell_size + self._cell_size // 2)
+                y_center * self._cell_size + self._cell_size // 2)
+
+    # Return la derniere partie de surface utilisée
+    # A partir de ou on peut utiliser les pixel
+    def get_end_surface(self) -> int:
+        return self._heigth * self._cell_size + self._thickness + 10

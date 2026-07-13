@@ -14,8 +14,7 @@ SHEET_PATH = (
 
 class PacmanPlayer:
 
-    def __init__(self, position: tuple[int, int], size: int):
-        self._xp = 0
+    def __init__(self, position: tuple[int, int], size: int) -> None:
         self.speed = (0, 2)
 
         self.sprite = Pacman(SHEET_PATH, size)
@@ -81,6 +80,3 @@ class PacmanPlayer:
             self.animation.current_frame(),
             self.rect
         )
-
-    def add_xp(self, xp: int) -> None:
-        self.xp += xp
