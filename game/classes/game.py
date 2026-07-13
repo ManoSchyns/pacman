@@ -96,8 +96,8 @@ class Game:
                      screen.get_width() // 2,
                      screen.get_height() // 2))
 
-        put_text("Enter your name and press enter\n" \
-                    "   To return to the main menu", 20,
+        put_text("Enter your name and press enter\n"
+                 "   To return to the main menu", 20,
                  (255, 255, 255), (
                      screen.get_width() // 2,
                      screen.get_height() // 2 + 150))
