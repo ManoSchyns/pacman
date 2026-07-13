@@ -34,13 +34,14 @@ class Game:
         self.number_pacgum = pacgum
 
         self.current_level = 0
+        self.final_level = len(level_list)
         self.player = Player(lives)
 
     def play(self, screen: pygame.Surface) -> None:
         # lancer le level x, avec une config x
         # Jouer en faisant augmenter les points
         running: bool = True
-        while running and self.current_level < 10:
+        while running and self.current_level < self.final_level:
             curr_level_data = self.level_list[self.current_level]
 
             level = Level(curr_level_data[0], curr_level_data[1],
@@ -48,7 +49,8 @@ class Game:
                           self.number_pacgum, self.points_per_pacgum,
                           self.points_per_super_pacgum,
                           self.points_per_ghost,
-                          self.level_max_time)
+                          self.level_max_time, self.current_level + 1,
+                          self.final_level)
 
             exit_value = level.play(self.player)
             if exit_value == -1:
@@ -59,7 +61,7 @@ class Game:
                 self.current_level += 1
             self.seed = random.randint(0, 2**32 - 1)
             level = None
-        if self.current_level == 10:
+        if self.current_level == self.final_level:
             self.show_end_screen("Well Done !", screen)
         else:
             self.show_end_screen("Game Over", screen)
@@ -75,37 +77,30 @@ class Game:
         if "Over" in message:
             color = (255, 0, 0)
 
-        font = pygame.font.Font("game/srcs/ARCADE_I.TTF", 80)
-        text = font.render(message, True, color)
-        text_rect = text.get_rect(
-            center=(
-                screen.get_width() // 2,
-                screen.get_height() // 2 - 100
-            )
-        )
-        screen.blit(text, text_rect)
+        def put_text(text_value: str, text_size: int,
+                     colors: tuple[int, int, int],
+                     postition: tuple[int, int]):
+            font = pygame.font.Font("game/srcs/ARCADE_I.TTF", text_size)
+            text = font.render(text_value, True, colors)
+            text_rect = text.get_rect(
+                center=postition
+                )
+            screen.blit(text, text_rect)
 
-        font = pygame.font.Font("game/srcs/ARCADE_I.TTF", 40)
-        text = font.render(f"Your score: {self.player.get_score()}",
-                           True, (255, 255, 0))
-        text_rect = text.get_rect(
-            center=(
+        put_text(message, 80, color, (
                 screen.get_width() // 2,
-                screen.get_height() // 2
-            )
-        )
-        screen.blit(text, text_rect)
+                screen.get_height() // 2 - 100))
 
-        font = pygame.font.Font("game/srcs/ARCADE_I.TTF", 20)
-        text = font.render("Enter your name and press enter to quit",
-                           True, (255, 255, 255))
-        text_rect = text.get_rect(
-            center=(
-                screen.get_width() // 2,
-                screen.get_height() // 2 + 150
-            )
-        )
-        screen.blit(text, text_rect)
+        put_text(f"Your score: {self.player.get_score()}", 40,
+                 (255, 255, 0), (
+                     screen.get_width() // 2,
+                     screen.get_height() // 2))
+
+        put_text("Enter your name and press enter\n" \
+                    "   To return to the main menu", 20,
+                 (255, 255, 255), (
+                     screen.get_width() // 2,
+                     screen.get_height() // 2 + 150))
 
         text_input = TextInput((screen.get_width() // 2 - 200,
                                 screen.get_height() // 2 + 40,

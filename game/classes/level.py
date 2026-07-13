@@ -18,7 +18,8 @@ class Level:
     def __init__(self, width: int, height: int, screen: pygame.Surface,
                  seed: int, number_pacgum: int,
                  points_per_pacgum: int, points_per_super_pacgum: int,
-                 points_per_ghost: int, level_max_time: int) -> None:
+                 points_per_ghost: int, level_max_time: int,
+                 curr_level: int, last_level: int) -> None:
         self.screen = screen
         self.maze = Maze(width, height, screen, seed)
         self.maze_surface = self.maze.get_maze_surface()
@@ -36,10 +37,18 @@ class Level:
 
         self.start_time = pygame.time.get_ticks()
 
+        self.curr_level = curr_level
+        self.last_level = last_level
+
     """
     Return -1 si le screen doit etre quitté
     Return 0 si le player a perdu
     Return 1 si le lvl est gagné
+
+    Touches:
+     Les fleches / autres pour bouger
+     espace -> Cheater mode. On passe en mode tricheur
+     Appuyer sur espace = passer au niveau suivant
     """
     def play(self, player: Player) -> int:
         clock: pygame.time.Clock = pygame.time.Clock()
@@ -73,7 +82,7 @@ class Level:
 
             # if collision avec bouboules -> score ++
 
-            player.increase_score(10)
+            # player.increase_score(10)
             self.screen.fill((0, 0, 0))
             self.screen.blit(self.maze.get_maze_surface(), (0, 0))
             self.pacman.draw(self.screen)
@@ -133,26 +142,26 @@ class Level:
 
         y = self.maze.get_end_surface()
 
-        score_text = font.render(
-            f"Score : {player.get_score()}",
-            True,
-            (255, 255, 255)
-        )
+        def put_message(message: str, position: tuple[int, int]):
+            """
+            Nested fonction pour afficher un message a une
+            position donnée
+            """
+            text = font.render(
+                message,
+                True,
+                (255, 255, 255)
+                )
+            self.screen.blit(text, position)
 
-        lives_text = font.render(
-            f"Lives : {player.get_lives()}",
-            True,
-            (255, 255, 255)
-        )
-
-        time_text = font.render(
-            f"Time : {self.current_time - self.get_time_s()}",
-            True,
-            (255, 255, 255)
-        )
-        self.screen.blit(score_text, (0, y))
-        self.screen.blit(lives_text, (100, y))
-        self.screen.blit(time_text, (200, y))
+        put_message(f"Level: {self.curr_level}/{self.last_level}",
+                    (0, y))
+        put_message(f"Score : {player.get_score()}",
+                    (100, y))
+        put_message(f"Lives : {player.get_lives()}",
+                    (200, y))
+        put_message(f"Time : {self.current_time - self.get_time_s()}",
+                    (300, y))
 
     # return en seconde le temps écoulé depuis le début du niveau
     def get_time_s(self) -> int:
