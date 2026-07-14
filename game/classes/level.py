@@ -37,48 +37,14 @@ class Level:
         self.maze = Maze(width, height, screen, seed)
         self.maze_surface = self.maze.get_maze_surface()
 
-        cell_size = self.maze.get_cell_size()
-        self.pacman = PacmanPlayer(self.maze.get_center_maze(),
-                                   self.maze.get_pacman_size(),
-                                   cell_size * 4, cell_size,
-                                   self.maze.is_open)
+        self.pacman = None
+        self.reset_pacman()
 
-        blinky_speed = cell_size * min(
-            GHOST_BASE_SPEED + BLINKY_SPEED_PER_LEVEL * (curr_level - 1),
-            BLINKY_MAX_SPEED)
-        pinky_speed = cell_size * min(
-            GHOST_BASE_SPEED + PINKY_SPEED_PER_LEVEL * (curr_level - 1),
-            PINKY_MAX_SPEED)
-        pinky_random_turn = max(
-            PINKY_BASE_RANDOM_TURN
-            - PINKY_RANDOM_TURN_DROP_PER_LEVEL * (curr_level - 1),
-            PINKY_MIN_RANDOM_TURN)
+        self.curr_level = curr_level
+        self.last_level = last_level
 
         self.ghosts: list[GhostPlayer] = []
-        for ghost_class, spawn in zip([Blinky, Pinky, Inky, Clyde],
-                                      self.maze.get_ghost_spawns()):
-            movement = None
-            brain: GhostBrain | None = None
-            speed = 0.0
-            if ghost_class is Blinky:
-                brain = GhostBrain()
-                speed = blinky_speed
-            elif ghost_class is Pinky:
-                brain = AmbushBrain(pinky_random_turn)
-                speed = pinky_speed
-            elif ghost_class is Inky:
-                brain = FlankBrain()
-                speed = blinky_speed
-            elif ghost_class is Clyde:
-                corner = (spawn[0] // cell_size, spawn[1] // cell_size)
-                brain = CowardBrain(corner)
-                speed = pinky_speed
-            if brain is not None:
-                movement = GridMovement(spawn, cell_size, speed,
-                                        self.maze.is_open)
-            self.ghosts.append(GhostPlayer(ghost_class, spawn,
-                                           self.maze.get_pacman_size(),
-                                           movement, brain))
+        self.reset_ghosts()
 
         self.number_pacgum = number_pacgum
         self.number_super_pacgum = 4
@@ -89,9 +55,6 @@ class Level:
         self.current_time = level_max_time
 
         self.start_time = pygame.time.get_ticks()
-
-        self.curr_level = curr_level
-        self.last_level = last_level
 
     """
     Return -1 si le screen doit etre quitté
@@ -129,8 +92,6 @@ class Level:
 
             self.pacman.move(dt)
 
-            # if collision avec fantomes -> lives -= 1
-
             # if collision avec bouboules -> score ++
 
             # player.increase_score(10)
@@ -149,21 +110,69 @@ class Level:
 
             if any(ghost.rect.colliderect(self.pacman.rect)
                    for ghost in self.ghosts):
+                player.lose_lives()
                 if not self.play_death_animation(player):
                     return -1
-                return 0
+                if player.get_lives() == 0:
+                    return 0
+                self.reset_ghosts()
+                self.reset_pacman()
+                self.play(player)
 
             self.show_information(player)
 
             pygame.display.flip()
-
-        if player.get_lives() == 0:
-            # Animate death ??
-            return 0
-        if self.current_time - self.get_time_s() <= 0:
-            # Animate end of time
+        if (self.current_time - self.get_time_s() <= 0
+                or player.get_lives() == 0):
             return 0
         return 1
+
+    def reset_pacman(self):
+        cell_size = self.maze.get_cell_size()
+        self.pacman = PacmanPlayer(self.maze.get_center_maze(),
+                                   self.maze.get_pacman_size(),
+                                   cell_size * 4, cell_size,
+                                   self.maze.is_open)
+
+    def reset_ghosts(self):
+        cell_size = self.maze.get_cell_size()
+
+        blinky_speed = cell_size * min(
+            GHOST_BASE_SPEED + BLINKY_SPEED_PER_LEVEL * (self.curr_level - 1),
+            BLINKY_MAX_SPEED)
+        pinky_speed = cell_size * min(
+            GHOST_BASE_SPEED + PINKY_SPEED_PER_LEVEL * (self.curr_level - 1),
+            PINKY_MAX_SPEED)
+        pinky_random_turn = max(
+            PINKY_BASE_RANDOM_TURN
+            - PINKY_RANDOM_TURN_DROP_PER_LEVEL * (self.curr_level - 1),
+            PINKY_MIN_RANDOM_TURN)
+
+        self.ghosts = []
+        for ghost_class, spawn in zip([Blinky, Pinky, Inky, Clyde],
+                                      self.maze.get_ghost_spawns()):
+            movement = None
+            brain: GhostBrain | None = None
+            speed = 0.0
+            if ghost_class is Blinky:
+                brain = GhostBrain()
+                speed = blinky_speed
+            elif ghost_class is Pinky:
+                brain = AmbushBrain(pinky_random_turn)
+                speed = pinky_speed
+            elif ghost_class is Inky:
+                brain = FlankBrain()
+                speed = blinky_speed
+            elif ghost_class is Clyde:
+                corner = (spawn[0] // cell_size, spawn[1] // cell_size)
+                brain = CowardBrain(corner)
+                speed = pinky_speed
+            if brain is not None:
+                movement = GridMovement(spawn, cell_size, speed,
+                                        self.maze.is_open)
+            self.ghosts.append(GhostPlayer(ghost_class, spawn,
+                                           self.maze.get_pacman_size(),
+                                           movement, brain))
 
     def play_death_animation(self, player: Player) -> bool:
         death = self.pacman.animations["death"]
