@@ -8,8 +8,8 @@ class Ghost:
     COLOR = ""
     DIRECTION_ORDER = ["right", "left", "up", "down"]
     FRAMES_PER_DIRECTION = 2
-    DEAD_INDICES = [32, 33]
-    WHITE_INDICES = [34, 35]
+    FRIGHTENED_INDICES = [32, 33]
+    EATEN_INDICES = [34, 35]
 
     def __init__(self, sheet_path: str) -> None:
         sheet = SpriteSheet(sheet_path)
@@ -20,14 +20,15 @@ class Ghost:
             self.animations[direction] = sprites[
                 start:start + self.FRAMES_PER_DIRECTION
             ]
-        dead = [sprites[i] for i in self.DEAD_INDICES]
-        white = [sprites[i] for i in self.WHITE_INDICES]
-        self.animations["dead"] = dead
+        frightened = [sprites[i] for i in self.FRIGHTENED_INDICES]
+        eaten = [sprites[i] for i in self.EATEN_INDICES]
+        self.animations["frightened"] = frightened
+        self.animations["eaten"] = eaten
         self.animations["revive"] = [
-            dead[0],
-            white[0],
-            dead[1],
-            white[1],
+            frightened[0],
+            eaten[0],
+            frightened[1],
+            eaten[1],
         ]
 
     @property

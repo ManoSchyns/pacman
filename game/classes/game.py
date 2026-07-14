@@ -37,7 +37,7 @@ class Game:
         self.final_level = len(level_list)
         self.player = Player(lives)
 
-    def play(self, screen: pygame.Surface) -> None:
+    def play(self, screen: pygame.Surface) -> bool:
         # lancer le level x, avec une config x
         # Jouer en faisant augmenter les points
         running: bool = True
@@ -54,7 +54,7 @@ class Game:
 
             exit_value = level.play(self.player)
             if exit_value == -1:
-                return
+                return False
             if exit_value == 0:
                 running = False
             else:
@@ -65,6 +65,7 @@ class Game:
             self.show_end_screen("Well Done !", screen)
         else:
             self.show_end_screen("Game Over", screen)
+        return True
 
     """
     Affiche l'écran de fin avec le score du joueur
