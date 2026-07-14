@@ -1,6 +1,6 @@
 import pygame
 
-from classes.spritesheet import SpriteSheet
+from sprietsheet.classes.spritesheet import SpriteSheet
 
 
 class Ghost:
@@ -8,8 +8,8 @@ class Ghost:
     COLOR = ""
     DIRECTION_ORDER = ["right", "left", "up", "down"]
     FRAMES_PER_DIRECTION = 2
-    DEAD_INDICES = [31, 32]
-    WHITE_INDICES = [33, 34]
+    DEAD_INDICES = [32, 33]
+    WHITE_INDICES = [34, 35]
 
     def __init__(self, sheet_path: str) -> None:
         sheet = SpriteSheet(sheet_path)

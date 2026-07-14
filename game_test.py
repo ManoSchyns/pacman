@@ -19,6 +19,6 @@ if __name__ == "__main__":
                   (3, 4),
                   (5, 7),
                   (10, 10)]
-    game = Game(level_list, 30, 0, 0, 0, 3, "heyy", 42, 10)
+    game = Game(level_list, 30, 0, 0, 0, 3, "heyy", 42, 90)
     game.play(screen)
     pygame.quit()
