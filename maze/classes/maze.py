@@ -1,5 +1,6 @@
 from mazegenerator import MazeGenerator
 import pygame as pygame
+import random
 
 NORTH: int = 1
 EAST: int = 2
@@ -163,6 +164,41 @@ class Maze:
             spawns.append((x * self._cell_size + self._cell_size // 2,
                            y * self._cell_size + self._cell_size // 2))
         return spawns
+
+    """
+    Return les points de spawn pour les superpacgum
+    -> Mis directement dans le coin
+    """
+    def get_super_pacgums_spawn(self) -> list[int, int]:
+        return self.get_ghost_spawns()
+
+    """
+    Return  toutes les cellules disponibles
+    """
+    def get_cell_available(self) -> list[tuple[int, int]]:
+        available: list[tuple[int, int]] = []
+
+        to_avoid: list[tuple[int, int]] = self.get_ghost_spawns()
+        to_avoid.append(self.get_center_maze())
+        to_avoid_2: list[tuple[int, int]] = self.get_super_pacgums_spawn()
+
+        for row in range(self._heigth):
+            for col in range(self._width):
+                y = row * self._cell_size + self._cell_size // 2
+                x = col * self._cell_size + self._cell_size // 2
+                if (not (x, y) in to_avoid and not (x, y)
+                        in to_avoid_2 and self._maze[row][col] != 15):
+                    available.append((x, y))
+
+        return available
+
+    """
+    Return les points de spawn des pacgums
+    """
+    def get_pacgums_spawn(self, number_of_spawn: int) -> list[tuple[int, int]]:
+        available: list[tuple[int, int]] = self.get_cell_available()
+        random.shuffle(available)
+        return available[:number_of_spawn]
 
     def _closest_free_cell(self, x: int, y: int) -> tuple[int, int]:
         step_x = 1 if x == 0 else -1

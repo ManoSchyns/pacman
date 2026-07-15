@@ -18,6 +18,7 @@ LEVEL_LIST = [(15, 17),
 
 if __name__ == "__main__":
     pygame.init()
+
     screen = pygame.display.set_mode((SCREEN_WIDTH,
                                       SCREEN_HEIGTH + 10))
     pygame.display.set_caption("PAC-MAN")
@@ -26,7 +27,7 @@ if __name__ == "__main__":
         action = menu.run()
         if action != "start":
             break
-        game = Game(LEVEL_LIST, 30, 0, 0, 0, 3, "heyy", 42, 90)
+        game = Game(LEVEL_LIST, 3, 10, 30, 0, 3, "heyy", 42, 90)
         if not game.play(screen):
             break
     pygame.quit()

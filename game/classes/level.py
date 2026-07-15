@@ -6,6 +6,7 @@ from maze.classes import Maze
 from pacman.classes import PacmanPlayer
 from pacman.classes.movement import GridMovement
 from player import Player
+from pacgums.classes.gen_pacgums import GenPacgums
 
 GHOST_BASE_SPEED = 3.0
 BLINKY_SPEED_PER_LEVEL = 0.25
@@ -37,6 +38,11 @@ class Level:
         self.maze = Maze(width, height, screen, seed)
         self.maze_surface = self.maze.get_maze_surface()
 
+        self.pacgums: GenPacgums = GenPacgums(number_pacgum, points_per_pacgum,
+                                              points_per_super_pacgum,
+                                              self.maze)
+        self.pacgums.generate()
+
         self.pacman = None
         self.reset_pacman()
 
@@ -46,11 +52,6 @@ class Level:
         self.ghosts: list[GhostPlayer] = []
         self.reset_ghosts()
 
-        self.number_pacgum = number_pacgum
-        self.number_super_pacgum = 4
-
-        self.points_per_pacgum = points_per_pacgum
-        self.points_per_super_pacgum = points_per_super_pacgum
         self.points_per_ghost = points_per_ghost
         self.current_time = level_max_time
 
@@ -71,9 +72,9 @@ class Level:
 
         if not self.waiting_screen(player):
             return -1
-        while (player.get_lives() > 0 and
-               self.number_pacgum > 0 and self.number_super_pacgum > 0
-               and self.current_time - self.get_time_s() > 0):
+        while (player.get_lives() > 0
+               and self.current_time - self.get_time_s() > 0
+               and self.pacgums.number_pacgums > 0):
 
             dt = clock.tick(60)/1000
 
@@ -92,12 +93,13 @@ class Level:
 
             self.pacman.move(dt)
 
-            # if collision avec bouboules -> score ++
+            player.increase_score(self.pacgums.eat(self.pacman.rect))
 
-            # player.increase_score(10)
             self.screen.fill((0, 0, 0))
             self.screen.blit(self.maze.get_maze_surface(), (0, 0))
             self.pacman.draw(self.screen)
+            self.pacgums.show(self.screen, dt)
+
             pacman_cell = self.pacman.movement.cell()
             blinky_movement = self.ghosts[0].movement
             context = ChaseContext(
