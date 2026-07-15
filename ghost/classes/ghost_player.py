@@ -24,6 +24,10 @@ class GhostPlayer:
         self.movement = movement
         self.brain = brain
 
+        self.edible = False
+        self.edible_cooldown = 0
+        self.start_edible_cooldown = pygame.time.get_ticks()
+
         self.animations = {
             action: Animation([
                 pygame.transform.scale(frame, (size, size))
@@ -39,6 +43,48 @@ class GhostPlayer:
         self.animation = self.animations[self.direction]
 
         self.rect = self.animation.current_frame().get_rect(center=position)
+
+    """
+    Fait respawn le fantome
+    """
+    def respawn(self) -> None:
+        spawn: tuple[int, int] = self.spawn_position
+        time = pygame.time.get_ticks()
+
+        self.movement.x = spawn[0]
+        self.movement.y = spawn[1]
+
+        self.movement.dead_cooldown = 2
+        self.movement.dead_cooldown_start = time
+
+    """
+    Return true si il est mangeable
+    """
+    def is_edible(self) -> bool:
+        if not self.edible:
+            return False
+
+        elapsed = pygame.time.get_ticks() - self.start_edible_cooldown
+
+        if elapsed // 1000 >= self.edible_cooldown and self.edible:
+            self.edible = False
+        return self.edible
+
+    def update_animation(self) -> None:
+        key: str
+
+        if self.is_edible():
+            elapsed = (pygame.time.get_ticks() -
+                       self.start_edible_cooldown) // 1000
+            if self.edible_cooldown - elapsed <= 2:
+                key = "revive"
+            else:
+                key = "frightened"
+        else:
+            key = self.direction
+        if self.animation is not self.animations[key]:
+            self.animation = self.animations[key]
+            self.animation.reset()
 
     def update(self, dt: float,
                context: ChaseContext | None = None) -> None:
@@ -66,6 +112,7 @@ class GhostPlayer:
             self.direction = self.movement.current_direction
             self.animation = self.animations[self.direction]
             self.animation.reset()
+        self.update_animation()
         self.animation.update(dt)
 
     def draw(self, screen: pygame.Surface) -> None:

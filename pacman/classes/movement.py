@@ -1,4 +1,5 @@
 from collections.abc import Callable
+import pygame
 
 DIRECTIONS: dict[str, tuple[int, int]] = {
     "right": (1, 0),
@@ -34,6 +35,20 @@ class GridMovement:
         self.wanted_direction = direction
         self.moving = True
 
+        self.dead_cooldown = 1
+        self.dead_cooldown_start = pygame.time.get_ticks()
+
+    """
+    Return true si il peut move
+    """
+    def can_move(self) -> bool:
+        curr = pygame.time.get_ticks()
+        elapsed = curr - self.dead_cooldown_start
+
+        if elapsed // 1000 >= self.dead_cooldown:
+            return True
+        return False
+
     def request(self, direction: str) -> None:
         self.wanted_direction = direction
 
@@ -50,10 +65,11 @@ class GridMovement:
                 and abs(center[1] - self.y) <= self.tolerance)
 
     def update(self, dt: float) -> tuple[int, int]:
-        dt = min(dt, 1 / 30)
-        self._try_turn()
-        if self.moving:
-            self._advance(self.speed * dt)
+        if self.can_move():
+            dt = min(dt, 1 / 30)
+            self._try_turn()
+            if self.moving:
+                self._advance(self.speed * dt)
         return self.position()
 
     def _try_turn(self) -> None:

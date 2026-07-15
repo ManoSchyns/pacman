@@ -6,6 +6,7 @@ from maze.classes import Maze
 from pacman.classes import PacmanPlayer
 from pacman.classes.movement import GridMovement
 from player import Player
+from pacgums.classes.gen_pacgums import GenPacgums
 
 GHOST_BASE_SPEED = 3.0
 BLINKY_SPEED_PER_LEVEL = 0.25
@@ -37,6 +38,11 @@ class Level:
         self.maze = Maze(width, height, screen, seed)
         self.maze_surface = self.maze.get_maze_surface()
 
+        self.pacgums: GenPacgums = GenPacgums(number_pacgum, points_per_pacgum,
+                                              points_per_super_pacgum,
+                                              self.maze)
+        self.pacgums.generate()
+
         self.pacman = None
         self.reset_pacman()
 
@@ -46,11 +52,6 @@ class Level:
         self.ghosts: list[GhostPlayer] = []
         self.reset_ghosts()
 
-        self.number_pacgum = number_pacgum
-        self.number_super_pacgum = 4
-
-        self.points_per_pacgum = points_per_pacgum
-        self.points_per_super_pacgum = points_per_super_pacgum
         self.points_per_ghost = points_per_ghost
         self.current_time = level_max_time
 
@@ -71,9 +72,9 @@ class Level:
 
         if not self.waiting_screen(player):
             return -1
-        while (player.get_lives() > 0 and
-               self.number_pacgum > 0 and self.number_super_pacgum > 0
-               and self.current_time - self.get_time_s() > 0):
+        while (player.get_lives() > 0
+               and self.current_time - self.get_time_s() > 0
+               and self.pacgums.number_pacgums > 0):
 
             dt = clock.tick(60)/1000
 
@@ -92,12 +93,13 @@ class Level:
 
             self.pacman.move(dt)
 
-            # if collision avec bouboules -> score ++
+            self.try_eat(player)
 
-            # player.increase_score(10)
             self.screen.fill((0, 0, 0))
             self.screen.blit(self.maze.get_maze_surface(), (0, 0))
             self.pacman.draw(self.screen)
+            self.pacgums.show(self.screen, dt)
+
             pacman_cell = self.pacman.movement.cell()
             blinky_movement = self.ghosts[0].movement
             context = ChaseContext(
@@ -108,16 +110,9 @@ class Level:
                 ghost.update(dt, context)
                 ghost.draw(self.screen)
 
-            if any(ghost.rect.colliderect(self.pacman.rect)
-                   for ghost in self.ghosts):
-                player.lose_lives()
-                if not self.play_death_animation(player):
-                    return -1
-                if player.get_lives() == 0:
-                    return 0
-                self.reset_ghosts()
-                self.reset_pacman()
-                self.play(player)
+            ret = self.check_col_with_ghost(player)
+            if ret <= 0:
+                return ret
 
             self.show_information(player)
 
@@ -125,6 +120,36 @@ class Level:
         if (self.current_time - self.get_time_s() <= 0
                 or player.get_lives() == 0):
             return 0
+        return 1
+
+    """
+    Verifie les collisions avec fantome
+    """
+    def check_col_with_ghost(self, player: Player) -> int:
+        for ghost in self.ghosts:
+            if ghost.rect.colliderect(self.pacman.rect):
+                ret = self.coll_with_ghost(player, ghost)
+                if ret <= 0:
+                    return ret
+        return 1
+
+    """
+    Gère les collisions avec les fantomes
+    """
+    def coll_with_ghost(self, player: Player, ghost: GhostPlayer) -> int:
+        if not ghost.is_edible() and ghost.movement.can_move():
+            player.lose_lives()
+            if not self.play_death_animation(player):
+                return -1
+            if player.get_lives() == 0:
+                return 0
+            self.reset_ghosts()
+            self.reset_pacman()
+            self.play(player)
+        elif ghost.is_edible():
+            player.increase_score(self.points_per_ghost)
+            ghost.respawn()
+            ghost.edible = False
         return 1
 
     def reset_pacman(self):
@@ -173,6 +198,20 @@ class Level:
             self.ghosts.append(GhostPlayer(ghost_class, spawn,
                                            self.maze.get_pacman_size(),
                                            movement, brain))
+
+    """
+    Pacman essaie de manger
+    Si Il mange son xp est augmentée
+    Si C'est un super pacgum Les fantomes deviennet vulnérable
+    """
+    def try_eat(self, player: Player):
+        data: tuple[int, bool] = self.pacgums.eat(self.pacman.rect)
+        player.increase_score(data[0])
+        if data[1]:
+            for ghost in self.ghosts:
+                ghost.edible = True
+                ghost.edible_cooldown = 6
+                ghost.start_edible_cooldown = pygame.time.get_ticks()
 
     def play_death_animation(self, player: Player) -> bool:
         death = self.pacman.animations["death"]
