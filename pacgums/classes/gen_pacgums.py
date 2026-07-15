@@ -18,7 +18,13 @@ class GenPacgums:
 
         self.maze = maze
 
-    def eat(self, rect: pygame.rect.Rect) -> int:
+    """
+    Retire un pacgum / superpacgum si le rect recu est sur
+    un pacgum
+
+    Return l'xp + Si c'est un superpacgum
+    """
+    def eat(self, rect: pygame.rect.Rect) -> tuple[int, bool]:
         for pacgum in self.list_pacgums:
             if rect.colliderect(pacgum.rect):
                 if isinstance(pacgum, SuperPacgums):
@@ -26,8 +32,8 @@ class GenPacgums:
                 else:
                     self.number_pacgums -= 1
                 self.list_pacgums.remove(pacgum)
-                return pacgum.xp
-        return 0
+                return (pacgum.xp, isinstance(pacgum, SuperPacgums))
+        return (0, False)
 
     def show(self, surface: pygame.Surface, dt: int) -> None:
         for pacgum in self.list_pacgums:
