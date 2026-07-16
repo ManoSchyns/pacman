@@ -68,6 +68,7 @@ class GhostPlayer:
 
         if elapsed // 1000 >= self.edible_cooldown and self.edible:
             self.edible = False
+            self.movement.speed = self.movement.normal_speed
         return self.edible
 
     def update_animation(self) -> None:
@@ -97,6 +98,7 @@ class GhostPlayer:
         target_cell = self.brain.target(own_context)
         if self.movement.at_decision_point() or not self.movement.moving:
             choice = self.brain.choose(
+                context,
                 self.movement.cell(),
                 self.movement.current_direction,
                 self.movement.is_open,

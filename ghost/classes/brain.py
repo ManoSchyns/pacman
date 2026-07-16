@@ -8,6 +8,7 @@ RANDOM_TURN_CHANCE = 0.2
 
 @dataclass
 class ChaseContext:
+    fear: bool
     pacman_cell: tuple[int, int]
     pacman_direction: str
     blinky_cell: tuple[int, int]
@@ -24,7 +25,8 @@ class GhostBrain:
     def target(self, context: ChaseContext) -> tuple[int, int]:
         return context.pacman_cell
 
-    def choose(self, cell: tuple[int, int], current_direction: str,
+    def choose(self, context: ChaseContext,
+               cell: tuple[int, int], current_direction: str,
                is_open: Callable[[tuple[int, int], str], bool],
                target_cell: tuple[int, int],
                force: bool = False) -> str | None:
@@ -43,6 +45,11 @@ class GhostBrain:
 
         if random.random() < self.random_turn_chance:
             return random.choice(options)
+
+        if context.fear:
+            return max(options, key=lambda direction: self._distance(
+             cell, direction, context.pacman_cell))
+
         return min(options, key=lambda direction: self._distance(
             cell, direction, target_cell))
 

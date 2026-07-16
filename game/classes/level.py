@@ -17,6 +17,10 @@ PINKY_BASE_RANDOM_TURN = 0.25
 PINKY_RANDOM_TURN_DROP_PER_LEVEL = 0.02
 PINKY_MIN_RANDOM_TURN = 0.05
 
+BASE_EDIBLE_COOLDOWN = 6
+MAX_EDIBLE_COOLDOWN = 9
+EDIBLE_COOLDOWN_PER_LEVEL = 0.2
+
 
 class Level:
 
@@ -102,11 +106,13 @@ class Level:
 
             pacman_cell = self.pacman.movement.cell()
             blinky_movement = self.ghosts[0].movement
-            context = ChaseContext(
-                pacman_cell,
-                self.pacman.movement.current_direction,
-                blinky_movement.cell() if blinky_movement else pacman_cell)
             for ghost in self.ghosts:
+                context = ChaseContext(
+                    ghost.is_edible(),
+                    pacman_cell,
+                    self.pacman.movement.current_direction,
+                    blinky_movement.cell() if blinky_movement else pacman_cell)
+
                 ghost.update(dt, context)
                 ghost.draw(self.screen)
 
@@ -150,6 +156,7 @@ class Level:
             player.increase_score(self.points_per_ghost)
             ghost.respawn()
             ghost.edible = False
+            ghost.movement.speed = ghost.movement.normal_speed
         return 1
 
     def reset_pacman(self):
@@ -210,8 +217,14 @@ class Level:
         if data[1]:
             for ghost in self.ghosts:
                 ghost.edible = True
-                ghost.edible_cooldown = 6
+                ghost.edible_cooldown = min(MAX_EDIBLE_COOLDOWN,
+                                            (BASE_EDIBLE_COOLDOWN +
+                                             EDIBLE_COOLDOWN_PER_LEVEL *
+                                             (self.last_level -
+                                              self.curr_level)))
                 ghost.start_edible_cooldown = pygame.time.get_ticks()
+
+                ghost.movement.speed = (ghost.movement.normal_speed * 0.6)
 
     def play_death_animation(self, player: Player) -> bool:
         death = self.pacman.animations["death"]

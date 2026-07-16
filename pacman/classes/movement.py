@@ -29,6 +29,7 @@ class GridMovement:
         self.y = float(position[1])
         self.cell_size = cell_size
         self.speed = speed
+        self.normal_speed = speed
         self.is_open = is_open
         self.tolerance = cell_size * TURN_TOLERANCE_RATIO
         self.current_direction = direction
