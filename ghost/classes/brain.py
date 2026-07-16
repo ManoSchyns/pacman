@@ -43,12 +43,12 @@ class GhostBrain:
                 return back
             return None
 
-        if random.random() < self.random_turn_chance:
-            return random.choice(options)
-
         if context.fear:
             return max(options, key=lambda direction: self._distance(
              cell, direction, context.pacman_cell))
+
+        if random.random() < self.random_turn_chance:
+            return random.choice(options)
 
         return min(options, key=lambda direction: self._distance(
             cell, direction, target_cell))
