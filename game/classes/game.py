@@ -40,6 +40,7 @@ class Game:
     def play(self, screen: pygame.Surface) -> bool:
         # lancer le level x, avec une config x
         # Jouer en faisant augmenter les points
+        end_message: str = "Game Over"
         game_random = random.Random()
         running: bool = True
         while running and self.current_level < self.final_level:
@@ -61,18 +62,58 @@ class Game:
             else:
                 self.current_level += 1
             self.seed = game_random.randint(0, 2**32 - 1)
+
         if self.current_level == self.final_level:
-            self.show_end_screen("Well Done !", screen)
-        else:
-            self.show_end_screen("Game Over", screen)
+            end_message = "Well Done !"
+
+        if not self.show_end_screen(end_message, screen):
+            return False
+        
         return True
 
     """
     Affiche l'écran de fin avec le score du joueur
     et Recupère le nom de l'utilisateur
     """
-    def show_end_screen(self, message: str, screen: pygame.Surface) -> None:
+    def show_end_screen(self, message: str, screen: pygame.Surface) -> bool:
         screen.fill((0, 0, 0))
+        validity: tuple[bool, str] = (True, "None")
+
+        change_flag: bool = True
+
+        text_input = TextInput((screen.get_width() // 2 - 200,
+                                screen.get_height() // 2 + 40,
+                                400, 40), screen)
+
+        running: bool = True
+        while running:
+            if change_flag:
+                self.end_screen_view(message, screen, validity, text_input)
+                change_flag = False
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    return False
+                if event.type == pygame.KEYDOWN:
+                    if event.key == pygame.K_RETURN:
+                        validity = self.player.verify_name()
+                        if validity[0]:
+                            running = False
+                        else:
+                            change_flag = True
+
+                exit_input = text_input.handle_input(event)
+                if exit_input == -1:
+                    return False
+                if exit_input == 1:
+                    self.player.name = text_input.get_value()
+                    validity = self.player.verify_name()
+                    change_flag = True
+        return True
+
+    def end_screen_view(self, message: str, screen: pygame.Surface,
+                        validity: tuple[bool, str], text_input: TextInput) -> None:
+        screen.fill((0, 0, 0))
+        last_padding_y: int = 150
 
         color: tuple[int, int, int] = (0, 128, 0)
         if "Over" in message:
@@ -97,27 +138,19 @@ class Game:
                      screen.get_width() // 2,
                      screen.get_height() // 2))
 
+        text_input.draw()
+
+        if not validity[0]:
+            put_text(validity[1], 20,
+                 (255, 0, 0), (
+                     screen.get_width() // 2,
+                     screen.get_height() // 2 + 150))
+            last_padding_y = 250
+
         put_text("Enter your name and press enter\n"
                  "   To return to the main menu", 20,
                  (255, 255, 255), (
                      screen.get_width() // 2,
-                     screen.get_height() // 2 + 150))
+                     screen.get_height() // 2 + last_padding_y))
 
-        text_input = TextInput((screen.get_width() // 2 - 200,
-                                screen.get_height() // 2 + 40,
-                                400, 40), screen)
-        text_input.draw()
         pygame.display.flip()
-        running: bool = True
-        while running:
-            for event in pygame.event.get():
-                if event.type == pygame.QUIT:
-                    running = False
-                if event.type == pygame.KEYDOWN:
-                    if event.key == pygame.K_RETURN:
-                        self.player.name = text_input.get_value()
-                        if not self.player.name == "":
-                            running = False
-                if not text_input.handle_input(event):
-                    running = False
-        print(self.player.name)

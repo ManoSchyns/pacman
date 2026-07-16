@@ -10,15 +10,19 @@ class TextInput:
         self.active: bool = False
         self.first_active = True
 
-    # Return false si on doit quitter le prog
-    # Return True si non
-    def handle_input(self, event: pygame.event.Event) -> bool:
+    """
+    Return 1 si le text a été changé
+    -1 si exit
+    0 si pas de changement
+    """
+    def handle_input(self, event: pygame.event.Event) -> int:
 
         def check_col() -> bool:
             if self.text_input.collidepoint(event.pos):
                 return True
             return False
 
+        change: int = 0
         if event.type == pygame.MOUSEBUTTONDOWN:
             self.active = check_col()
         while self.active:
@@ -27,7 +31,7 @@ class TextInput:
                 self.text = ""
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
-                    return False
+                    return -1
                 if event.type == pygame.MOUSEBUTTONDOWN:
                     self.active = check_col()
                 if event.type == pygame.KEYDOWN:
@@ -39,11 +43,12 @@ class TextInput:
                             self.text = "Your name"
                             self.first_active = True
                             self.draw()
-                        return True
+                        return change
                     elif str.isprintable(event.unicode):
+                        change = 1
                         self.text += event.unicode
                 self.draw()
-        return True
+        return change
 
     def draw(self) -> None:
         pygame.draw.rect(
