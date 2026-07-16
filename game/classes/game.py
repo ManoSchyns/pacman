@@ -40,6 +40,7 @@ class Game:
     def play(self, screen: pygame.Surface) -> bool:
         # lancer le level x, avec une config x
         # Jouer en faisant augmenter les points
+        game_random = random.Random()
         running: bool = True
         while running and self.current_level < self.final_level:
             curr_level_data = self.level_list[self.current_level]
@@ -59,7 +60,7 @@ class Game:
                 running = False
             else:
                 self.current_level += 1
-            self.seed = random.randint(0, 2**32 - 1)
+            self.seed = game_random.randint(0, 2**32 - 1)
             level = None
         if self.current_level == self.final_level:
             self.show_end_screen("Well Done !", screen)

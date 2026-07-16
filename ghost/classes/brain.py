@@ -37,21 +37,34 @@ class GhostBrain:
         options = [direction for direction in DIRECTIONS
                    if direction != OPPOSITES[current_direction]
                    and is_open(cell, direction)]
+
         if not options:
             back = OPPOSITES[current_direction]
             if is_open(cell, back):
                 return back
             return None
 
-        if context.fear:
-            return max(options, key=lambda direction: self._distance(
-             cell, direction, context.pacman_cell))
-
         if random.random() < self.random_turn_chance:
             return random.choice(options)
 
+        if context.fear:
+            opp = OPPOSITES[current_direction]
+            if is_open(cell, opp) and self.can_revert(context, cell):
+                options.append(opp)
+            return max(options, key=lambda direction: self._distance(
+             cell, direction, context.pacman_cell))
+
         return min(options, key=lambda direction: self._distance(
             cell, direction, target_cell))
+
+    def can_revert(self, context: ChaseContext, cell: tuple[int, int]) -> bool:
+        same_line = cell[1] == context.pacman_cell[1]
+        same_col = cell[0] == context.pacman_cell[0]
+
+        if same_line or same_col:
+            return True
+
+        return False
 
     @staticmethod
     def _distance(cell: tuple[int, int], direction: str,

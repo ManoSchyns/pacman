@@ -18,7 +18,7 @@ PINKY_RANDOM_TURN_DROP_PER_LEVEL = 0.02
 PINKY_MIN_RANDOM_TURN = 0.05
 
 BASE_EDIBLE_COOLDOWN = 6
-MAX_EDIBLE_COOLDOWN = 9
+MAX_EDIBLE_COOLDOWN = 10
 EDIBLE_COOLDOWN_PER_LEVEL = 0.2
 
 
@@ -216,15 +216,16 @@ class Level:
         player.increase_score(data[0])
         if data[1]:
             for ghost in self.ghosts:
-                ghost.edible = True
-                ghost.edible_cooldown = min(MAX_EDIBLE_COOLDOWN,
-                                            (BASE_EDIBLE_COOLDOWN +
-                                             EDIBLE_COOLDOWN_PER_LEVEL *
-                                             (self.last_level -
-                                              self.curr_level)))
-                ghost.start_edible_cooldown = pygame.time.get_ticks()
+                if ghost.movement.can_move():
+                    ghost.edible = True
+                    ghost.edible_cooldown = min(MAX_EDIBLE_COOLDOWN,
+                                                (BASE_EDIBLE_COOLDOWN +
+                                                EDIBLE_COOLDOWN_PER_LEVEL *
+                                                (self.last_level -
+                                                self.curr_level)))
+                    ghost.start_edible_cooldown = pygame.time.get_ticks()
 
-                ghost.movement.speed = (ghost.movement.normal_speed * 0.6)
+                    ghost.movement.speed = (ghost.movement.normal_speed * 0.6)
 
     def play_death_animation(self, player: Player) -> bool:
         death = self.pacman.animations["death"]
