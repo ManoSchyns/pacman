@@ -61,7 +61,6 @@ class Game:
             else:
                 self.current_level += 1
             self.seed = game_random.randint(0, 2**32 - 1)
-            level = None
         if self.current_level == self.final_level:
             self.show_end_screen("Well Done !", screen)
         else:
@@ -72,7 +71,7 @@ class Game:
     Affiche l'écran de fin avec le score du joueur
     et Recupère le nom de l'utilisateur
     """
-    def show_end_screen(self, message: str, screen: pygame.Surface):
+    def show_end_screen(self, message: str, screen: pygame.Surface) -> None:
         screen.fill((0, 0, 0))
 
         color: tuple[int, int, int] = (0, 128, 0)
@@ -81,7 +80,7 @@ class Game:
 
         def put_text(text_value: str, text_size: int,
                      colors: tuple[int, int, int],
-                     postition: tuple[int, int]):
+                     postition: tuple[int, int]) -> None:
             font = pygame.font.Font("game/srcs/ARCADE_I.TTF", text_size)
             text = font.render(text_value, True, colors)
             text_rect = text.get_rect(

@@ -25,8 +25,8 @@ class GridMovement:
                  speed: float,
                  is_open: Callable[[tuple[int, int], str], bool],
                  direction: str = "down") -> None:
-        self.x = float(position[0])
-        self.y = float(position[1])
+        self.x: float = float(position[0])
+        self.y: float = float(position[1])
         self.cell_size = cell_size
         self.speed = speed
         self.normal_speed = speed

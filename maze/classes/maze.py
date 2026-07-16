@@ -12,8 +12,8 @@ class Maze:
                  screen: pygame.Surface,
                  seed: int = 0) -> None:
 
-        self._cell_size = min(screen.get_width() // width,
-                              (screen.get_height() - 50) // height)
+        self._cell_size: int = min(screen.get_width() // width,
+                                   (screen.get_height() - 50) // height)
         self._width = width
         self._heigth = height
         self._thickness = 5
@@ -169,7 +169,7 @@ class Maze:
     Return les points de spawn pour les superpacgum
     -> Mis directement dans le coin
     """
-    def get_super_pacgums_spawn(self) -> list[int, int]:
+    def get_super_pacgums_spawn(self) -> list[tuple[int, int]]:
         return self.get_ghost_spawns()
 
     """

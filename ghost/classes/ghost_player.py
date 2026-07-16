@@ -25,7 +25,7 @@ class GhostPlayer:
         self.brain = brain
 
         self.edible = False
-        self.edible_cooldown = 0
+        self.edible_cooldown: float = 0
         self.start_edible_cooldown = pygame.time.get_ticks()
 
         self.animations = {
@@ -51,6 +51,8 @@ class GhostPlayer:
         spawn: tuple[int, int] = self.spawn_position
         time = pygame.time.get_ticks()
 
+        if self.movement is None:
+            return
         self.movement.x = spawn[0]
         self.movement.y = spawn[1]
 
@@ -68,7 +70,8 @@ class GhostPlayer:
 
         if elapsed // 1000 >= self.edible_cooldown and self.edible:
             self.edible = False
-            self.movement.speed = self.movement.normal_speed
+            if self.movement is not None:
+                self.movement.speed = self.movement.normal_speed
         return self.edible
 
     def update_animation(self) -> None:
