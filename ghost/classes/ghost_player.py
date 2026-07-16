@@ -54,7 +54,7 @@ class GhostPlayer:
         self.movement.x = spawn[0]
         self.movement.y = spawn[1]
 
-        self.movement.dead_cooldown = 2
+        self.movement.dead_cooldown = 5
         self.movement.dead_cooldown_start = time
 
     """
