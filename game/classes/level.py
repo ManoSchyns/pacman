@@ -17,6 +17,10 @@ PINKY_BASE_RANDOM_TURN = 0.25
 PINKY_RANDOM_TURN_DROP_PER_LEVEL = 0.02
 PINKY_MIN_RANDOM_TURN = 0.05
 
+BASE_EDIBLE_COOLDOWN = 6
+MAX_EDIBLE_COOLDOWN = 10
+EDIBLE_COOLDOWN_PER_LEVEL = 0.2
+
 
 class Level:
 
@@ -43,7 +47,7 @@ class Level:
                                               self.maze)
         self.pacgums.generate()
 
-        self.pacman = None
+        self.pacman: PacmanPlayer | None = None
         self.reset_pacman()
 
         self.curr_level = curr_level
@@ -71,6 +75,9 @@ class Level:
         clock: pygame.time.Clock = pygame.time.Clock()
 
         if not self.waiting_screen(player):
+            return -1
+
+        if self.pacgums is None or self.pacman is None:
             return -1
         while (player.get_lives() > 0
                and self.current_time - self.get_time_s() > 0
@@ -102,11 +109,13 @@ class Level:
 
             pacman_cell = self.pacman.movement.cell()
             blinky_movement = self.ghosts[0].movement
-            context = ChaseContext(
-                pacman_cell,
-                self.pacman.movement.current_direction,
-                blinky_movement.cell() if blinky_movement else pacman_cell)
             for ghost in self.ghosts:
+                context = ChaseContext(
+                    ghost.is_edible(),
+                    pacman_cell,
+                    self.pacman.movement.current_direction,
+                    blinky_movement.cell() if blinky_movement else pacman_cell)
+
                 ghost.update(dt, context)
                 ghost.draw(self.screen)
 
@@ -127,7 +136,9 @@ class Level:
     """
     def check_col_with_ghost(self, player: Player) -> int:
         for ghost in self.ghosts:
-            if ghost.rect.colliderect(self.pacman.rect):
+            if ghost is None or self.pacman is None:
+                return -1
+            elif ghost.rect.colliderect(self.pacman.rect):
                 ret = self.coll_with_ghost(player, ghost)
                 if ret <= 0:
                     return ret
@@ -137,6 +148,8 @@ class Level:
     Gère les collisions avec les fantomes
     """
     def coll_with_ghost(self, player: Player, ghost: GhostPlayer) -> int:
+        if ghost.movement is None:
+            return -1
         if not ghost.is_edible() and ghost.movement.can_move():
             player.lose_lives()
             if not self.play_death_animation(player):
@@ -150,16 +163,17 @@ class Level:
             player.increase_score(self.points_per_ghost)
             ghost.respawn()
             ghost.edible = False
+            ghost.movement.speed = ghost.movement.normal_speed
         return 1
 
-    def reset_pacman(self):
+    def reset_pacman(self) -> None:
         cell_size = self.maze.get_cell_size()
         self.pacman = PacmanPlayer(self.maze.get_center_maze(),
                                    self.maze.get_pacman_size(),
                                    cell_size * 4, cell_size,
                                    self.maze.is_open)
 
-    def reset_ghosts(self):
+    def reset_ghosts(self) -> None:
         cell_size = self.maze.get_cell_size()
 
         blinky_speed = cell_size * min(
@@ -204,16 +218,30 @@ class Level:
     Si Il mange son xp est augmentée
     Si C'est un super pacgum Les fantomes deviennet vulnérable
     """
-    def try_eat(self, player: Player):
+    def try_eat(self, player: Player) -> None:
+        if self.pacman is None:
+            return
         data: tuple[int, bool] = self.pacgums.eat(self.pacman.rect)
         player.increase_score(data[0])
         if data[1]:
             for ghost in self.ghosts:
-                ghost.edible = True
-                ghost.edible_cooldown = 6
-                ghost.start_edible_cooldown = pygame.time.get_ticks()
+                if ghost.movement is None:
+                    return
+                if ghost.movement.can_move():
+                    ghost.edible = True
+                    ghost.edible_cooldown = min(
+                        MAX_EDIBLE_COOLDOWN,
+                        (BASE_EDIBLE_COOLDOWN +
+                         EDIBLE_COOLDOWN_PER_LEVEL *
+                         (self.last_level -
+                          self.curr_level)))
+                    ghost.start_edible_cooldown = pygame.time.get_ticks()
+
+                    ghost.movement.speed = (ghost.movement.normal_speed * 0.6)
 
     def play_death_animation(self, player: Player) -> bool:
+        if self.pacman is None:
+            return False
         death = self.pacman.animations["death"]
         death.reset()
         clock: pygame.time.Clock = pygame.time.Clock()
@@ -239,6 +267,8 @@ class Level:
         Ecran d'attente. Tant que l'utilisateur
         n'appuie pas sur une touche, on attend
         """
+        if self.pacman is None:
+            return False
         self.screen.fill((0, 0, 0))
         self.screen.blit(self.maze_surface, (0, 0))
         self.pacman.draw(self.screen)
@@ -278,7 +308,7 @@ class Level:
 
         y = self.maze.get_end_surface()
 
-        def put_message(message: str, position: tuple[int, int]):
+        def put_message(message: str, position: tuple[int, int]) -> None:
             """
             Nested fonction pour afficher un message a une
             position donnée
@@ -304,16 +334,3 @@ class Level:
         elapsed_time: int = pygame.time.get_ticks() - self.start_time
         elapsed_time = elapsed_time // 1000
         return elapsed_time
-
-
-if __name__ == "__main__":
-    cell_size = 30
-    width = 10
-    height = 7
-
-    # Scrren du jeu
-    screen = pygame.display.set_mode((width * cell_size + 5,
-                                      height * cell_size + 5))
-    level = Level(width, height, 42, 10, 0, 0, 0, 100)
-    player = Player(3)
-    level.play(screen, player)

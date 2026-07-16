@@ -8,6 +8,7 @@ RANDOM_TURN_CHANCE = 0.2
 
 @dataclass
 class ChaseContext:
+    fear: bool
     pacman_cell: tuple[int, int]
     pacman_direction: str
     blinky_cell: tuple[int, int]
@@ -24,7 +25,8 @@ class GhostBrain:
     def target(self, context: ChaseContext) -> tuple[int, int]:
         return context.pacman_cell
 
-    def choose(self, cell: tuple[int, int], current_direction: str,
+    def choose(self, context: ChaseContext,
+               cell: tuple[int, int], current_direction: str,
                is_open: Callable[[tuple[int, int], str], bool],
                target_cell: tuple[int, int],
                force: bool = False) -> str | None:
@@ -35,6 +37,7 @@ class GhostBrain:
         options = [direction for direction in DIRECTIONS
                    if direction != OPPOSITES[current_direction]
                    and is_open(cell, direction)]
+
         if not options:
             back = OPPOSITES[current_direction]
             if is_open(cell, back):
@@ -43,8 +46,25 @@ class GhostBrain:
 
         if random.random() < self.random_turn_chance:
             return random.choice(options)
+
+        if context.fear:
+            opp = OPPOSITES[current_direction]
+            if is_open(cell, opp) and self.can_revert(context, cell):
+                options.append(opp)
+            return max(options, key=lambda direction: self._distance(
+             cell, direction, context.pacman_cell))
+
         return min(options, key=lambda direction: self._distance(
             cell, direction, target_cell))
+
+    def can_revert(self, context: ChaseContext, cell: tuple[int, int]) -> bool:
+        same_line = cell[1] == context.pacman_cell[1]
+        same_col = cell[0] == context.pacman_cell[0]
+
+        if same_line or same_col:
+            return True
+
+        return False
 
     @staticmethod
     def _distance(cell: tuple[int, int], direction: str,

@@ -10,10 +10,14 @@ class SpriteSheet(SpriteSheetBase):
         self.bg_threshold = bg_threshold
 
     def is_background(self, color: pygame.Color) -> bool:
+        r: int = color.r
+        g: int = color.g
+        b: int = color.b
+
         return (
-            color.r < self.bg_threshold
-            and color.g < self.bg_threshold
-            and color.b < self.bg_threshold
+            r < self.bg_threshold
+            and g < self.bg_threshold
+            and b < self.bg_threshold
         )
 
     def sprite_at(
@@ -136,10 +140,10 @@ class SpriteSheet(SpriteSheetBase):
         rects: list[pygame.Rect], row_tolerance: int = 8
     ) -> list[pygame.Rect]:
         ordered: list[pygame.Rect] = []
-        remaining = sorted(rects, key=lambda r: r.top)
+        remaining = sorted(rects, key=lambda r: int(r.top))
         while remaining:
             row_top = remaining[0].top
             row = [r for r in remaining if r.top - row_top < row_tolerance]
             remaining = remaining[len(row):]
-            ordered.extend(sorted(row, key=lambda r: r.left))
+            ordered.extend(sorted(row, key=lambda r: int(r.left)))
         return ordered

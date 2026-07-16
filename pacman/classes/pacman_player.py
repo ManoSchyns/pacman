@@ -31,7 +31,8 @@ class PacmanPlayer:
             for action in self.sprite.actions()
         }
 
-        self.movement = GridMovement(position, cell_size, speed, is_open)
+        self.movement: GridMovement = GridMovement(position, cell_size,
+                                                   speed, is_open)
         self.animation = self.animations[self.movement.current_direction]
         self.rect = self.animation.current_frame().get_rect(center=position)
 
