@@ -10,40 +10,36 @@ class TextInput:
         self.active: bool = False
         self.first_active = True
 
-    # Return false si on doit quitter le prog
-    # Return True si non
-    def handle_input(self, event: pygame.event.Event) -> bool:
+    """
+    Return 1 si le text a été changé
+    -1 si exit
+    0 si pas de changement
+    """
+    def handle_input(self, event: pygame.event.Event) -> int:
 
         def check_col() -> bool:
             if self.text_input.collidepoint(event.pos):
                 return True
             return False
 
+        change: int = 0
         if event.type == pygame.MOUSEBUTTONDOWN:
             self.active = check_col()
-        while self.active:
-            if self.first_active:
-                self.first_active = False
-                self.text = ""
-            for event in pygame.event.get():
-                if event.type == pygame.QUIT:
-                    return False
-                if event.type == pygame.MOUSEBUTTONDOWN:
-                    self.active = check_col()
-                if event.type == pygame.KEYDOWN:
-                    if event.key == pygame.K_BACKSPACE:
-                        self.text = self.text[:-1]
-                    if event.key == pygame.K_RETURN:
-                        self.active = False
-                        if self.text == "":
-                            self.text = "Your name"
-                            self.first_active = True
-                            self.draw()
-                        return True
-                    elif str.isprintable(event.unicode):
-                        self.text += event.unicode
-                self.draw()
-        return True
+        if self.first_active:
+            self.first_active = False
+            self.text = ""
+        if self.active:
+            if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_BACKSPACE:
+                    self.text = self.text[:-1]
+                    change = 1
+                elif str.isprintable(event.unicode):
+                    change = 1
+                    self.text += event.unicode
+        if self.text == "":
+            self.text = "Your name"
+            self.first_active = True
+        return change
 
     def draw(self) -> None:
         pygame.draw.rect(
@@ -73,7 +69,6 @@ class TextInput:
                  self.text_input.centery
                  ))
         self.screen.blit(text, text_rect)
-        pygame.display.flip()
 
     def get_value(self) -> str:
         if self.text == "Your name":
