@@ -7,6 +7,7 @@ from pacman.classes import PacmanPlayer
 from pacman.classes.movement import GridMovement
 from player import Player
 from pacgums.classes.gen_pacgums import GenPacgums
+from sound.mixer import get_mixer
 
 GHOST_BASE_SPEED = 3.0
 BLINKY_SPEED_PER_LEVEL = 0.25
@@ -59,6 +60,8 @@ class Level:
         self.points_per_ghost = points_per_ghost
         self.current_time = level_max_time
 
+        self.mixer = get_mixer()
+
         self.start_time = pygame.time.get_ticks()
 
     """
@@ -79,57 +82,76 @@ class Level:
 
         if self.pacgums is None or self.pacman is None:
             return -1
-        while (player.get_lives() > 0
-               and self.current_time - self.get_time_s() > 0
-               and self.pacgums.number_pacgums > 0):
+        try:
+            while (player.get_lives() > 0
+                   and self.current_time - self.get_time_s() > 0
+                   and self.pacgums.number_pacgums > 0):
 
-            dt = clock.tick(60)/1000
+                self.mixer.update_gameplay(self.ghost_sound_state())
+                dt = clock.tick(60)/1000
 
-            # touches clavier
-            for event in pygame.event.get():
-                if event.type == pygame.QUIT:
-                    return -1
-                if event.type == pygame.KEYDOWN:
-                    if event.key == pygame.K_SPACE:
-                        return 1
-                    if event.key == pygame.K_ESCAPE:
-                        if not self.waiting_screen(player):
-                            return -1
+                # touches clavier
+                for event in pygame.event.get():
+                    if event.type == pygame.QUIT:
+                        return -1
+                    if event.type == pygame.KEYDOWN:
+                        if event.key == pygame.K_SPACE:
+                            return 1
+                        if event.key == pygame.K_ESCAPE:
+                            self.mixer.stop_gameplay()
+                            if not self.waiting_screen(player):
+                                return -1
 
-            self.pacman.handle_input()
+                self.pacman.handle_input()
 
-            self.pacman.move(dt)
+                self.pacman.move(dt)
 
-            self.try_eat(player)
+                self.try_eat(player)
 
-            self.screen.fill((0, 0, 0))
-            self.screen.blit(self.maze.get_maze_surface(), (0, 0))
-            self.pacman.draw(self.screen)
-            self.pacgums.show(self.screen, dt)
+                self.screen.fill((0, 0, 0))
+                self.screen.blit(self.maze.get_maze_surface(), (0, 0))
+                self.pacman.draw(self.screen)
+                self.pacgums.show(self.screen, dt)
 
-            pacman_cell = self.pacman.movement.cell()
-            blinky_movement = self.ghosts[0].movement
-            for ghost in self.ghosts:
-                context = ChaseContext(
-                    ghost.is_edible(),
-                    pacman_cell,
-                    self.pacman.movement.current_direction,
-                    blinky_movement.cell() if blinky_movement else pacman_cell)
+                pacman_cell = self.pacman.movement.cell()
+                blinky_movement = self.ghosts[0].movement
+                for ghost in self.ghosts:
+                    context = ChaseContext(
+                        ghost.is_edible(),
+                        pacman_cell,
+                        self.pacman.movement.current_direction,
+                        blinky_movement.cell() if blinky_movement
+                        else pacman_cell)
 
-                ghost.update(dt, context)
-                ghost.draw(self.screen)
+                    ghost.update(dt, context)
+                    ghost.draw(self.screen)
 
-            ret = self.check_col_with_ghost(player)
-            if ret <= 0:
-                return ret
+                ret = self.check_col_with_ghost(player)
+                if ret <= 0:
+                    return ret
 
-            self.show_information(player)
+                self.show_information(player)
 
-            pygame.display.flip()
-        if (self.current_time - self.get_time_s() <= 0
-                or player.get_lives() == 0):
-            return 0
-        return 1
+                pygame.display.flip()
+            if (self.current_time - self.get_time_s() <= 0
+                    or player.get_lives() == 0):
+                return 0
+            return 1
+        finally:
+            self.mixer.stop_gameplay()
+
+    """
+    Etat sonore de fond des fantomes:
+     - normal      -> sirene de base (#01)
+     - vulnerables -> son bleu (#08)
+     - clignotement -> son bleu/blanc de fin (#03)
+    """
+    def ghost_sound_state(self) -> str:
+        if any(ghost.is_reviving() for ghost in self.ghosts):
+            return "revive"
+        if any(ghost.is_edible() for ghost in self.ghosts):
+            return "frightened"
+        return "siren"
 
     """
     Verifie les collisions avec fantome
@@ -221,9 +243,13 @@ class Level:
     def try_eat(self, player: Player) -> None:
         if self.pacman is None:
             return
+        before = self.pacgums.number_pacgums
         data: tuple[int, bool] = self.pacgums.eat(self.pacman.rect)
         player.increase_score(data[0])
+        if self.pacgums.number_pacgums < before:
+            self.mixer.play_chomp()
         if data[1]:
+            self.mixer.play_super()
             for ghost in self.ghosts:
                 if ghost.movement is None:
                     return
@@ -244,6 +270,7 @@ class Level:
             return False
         death = self.pacman.animations["death"]
         death.reset()
+        self.mixer.play_death()
         clock: pygame.time.Clock = pygame.time.Clock()
 
         while not death.finished:

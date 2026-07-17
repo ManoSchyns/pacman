@@ -10,6 +10,7 @@ from ghost.classes import Blinky, Clyde, Ghost, Inky, Pinky
 from pacman.animations import Animation
 from pacman.classes.pacman import Pacman
 from score import Scores
+from sound.mixer import get_mixer
 
 ROOT = Path(__file__).resolve().parents[2]
 TITLE_PATH = ROOT / "assets" / "pacman_title_transparent.png"
@@ -223,9 +224,19 @@ class MainMenu:
         self.item_rects: list[pygame.Rect] = []
         self.time = 0.0
 
+        self.mixer = get_mixer()
+
+    def _start_music(self) -> None:
+        self.mixer.play_music()
+
+    def _stop_music(self) -> None:
+        self.mixer.stop_music()
+
     def run(self) -> str:
         clock: pygame.time.Clock = pygame.time.Clock()
-        while True:
+        self._start_music()
+        result: str | None = None
+        while result is None:
             dt = min(clock.tick(60) / 1000, 1 / 30)
             self.time += dt
             self.parade.update(dt)
@@ -233,22 +244,26 @@ class MainMenu:
 
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
-                    return "quit"
+                    result = "quit"
+                    break
                 if event.type == pygame.KEYDOWN:
-                    action = self._handle_key(event.key)
-                    if action is not None:
-                        return action
+                    result = self._handle_key(event.key)
+                    if result is not None:
+                        break
                 elif event.type == pygame.MOUSEMOTION:
                     self._hover(event.pos)
                 elif (event.type == pygame.MOUSEBUTTONDOWN
                         and event.button == 1):
                     if self._hover(event.pos):
-                        action = self._activate()
-                        if action is not None:
-                            return action
+                        result = self._activate()
+                        if result is not None:
+                            break
 
             self._draw()
             pygame.display.flip()
+
+        self._stop_music()
+        return result
 
     def _handle_key(self, key: int) -> str | None:
         if key in (pygame.K_UP, pygame.K_w):

@@ -74,6 +74,17 @@ class GhostPlayer:
                 self.movement.speed = self.movement.normal_speed
         return self.edible
 
+    """
+    Return true si le fantome est dans sa phase de clignotement
+    bleu/blanc (les 2 dernieres secondes de vulnerabilite)
+    """
+    def is_reviving(self) -> bool:
+        if not self.is_edible():
+            return False
+        elapsed = (pygame.time.get_ticks() -
+                   self.start_edible_cooldown) // 1000
+        return self.edible_cooldown - elapsed <= 2
+
     def update_animation(self) -> None:
         key: str
 

@@ -4,6 +4,7 @@ import pygame
 from .level import Level
 from player import Player
 from game.srcs import TextInput
+from sound.mixer import get_mixer
 
 
 class Game:
@@ -42,6 +43,8 @@ class Game:
         self.font_40 = pygame.font.Font("game/srcs/ARCADE_I.TTF", 40)
         self.font_20 = pygame.font.Font("game/srcs/ARCADE_I.TTF", 20)
         self.font_15 = pygame.font.Font("game/srcs/ARCADE_R.TTF", 15)
+
+        self.mixer = get_mixer()
 
     def play(self, screen: pygame.Surface) -> bool:
         # lancer le level x, avec une config x
@@ -82,6 +85,8 @@ class Game:
     """
     def show_end_screen(self, message: str, screen: pygame.Surface) -> bool:
         screen.fill((0, 0, 0))
+        if "Over" in message:
+            self.mixer.play_game_over()
         validity: tuple[bool, str] = (True, "None")
         clock = pygame.Clock()
         scores = Scores()
