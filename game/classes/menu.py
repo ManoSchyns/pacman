@@ -9,6 +9,7 @@ import pytweening
 from ghost.classes import Blinky, Clyde, Ghost, Inky, Pinky
 from pacman.animations import Animation
 from pacman.classes.pacman import Pacman
+from score import Scores
 
 ROOT = Path(__file__).resolve().parents[2]
 TITLE_PATH = ROOT / "assets" / "pacman_title_transparent.png"
@@ -273,8 +274,12 @@ class MainMenu:
             return "quit"
         lines: tuple[str, ...]
         if label == "HIGHSCORES":
+            scores = Scores()
+            tuple_scores = scores.get_scores()
             lines = ("NO SCORES YET", "",
                      "PLAY A GAME TO SET", "THE FIRST RECORD !")
+            if len(tuple_scores) > 0:
+                lines = tuple_scores
         else:
             lines = ("ARROW KEYS : MOVE", "ESC : PAUSE",
                      "SPACE : SKIP LEVEL", "",

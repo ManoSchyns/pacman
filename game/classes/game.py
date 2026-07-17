@@ -1,4 +1,5 @@
 import random
+from score import Scores
 import pygame
 from .level import Level
 from player import Player
@@ -83,6 +84,7 @@ class Game:
         screen.fill((0, 0, 0))
         validity: tuple[bool, str] = (True, "None")
         clock = pygame.Clock()
+        scores = Scores()
 
         change_flag: bool = True
 
@@ -114,6 +116,11 @@ class Game:
                     validity = self.player.verify_name()
                     change_flag = True
             clock.tick(60)
+
+        if self.player.name is not None:
+            scores.add_player_scores(self.player.name,
+                                     self.player.get_score())
+        scores.export_scores()
         return True
 
     def end_screen_view(self, message: str, screen: pygame.Surface,
