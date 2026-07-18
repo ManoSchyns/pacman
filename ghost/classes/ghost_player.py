@@ -1,7 +1,7 @@
 from dataclasses import replace
 from pathlib import Path
 import pygame
-from ghost.animations import Animation
+from animation import Animation
 from pacman.classes.movement import GridMovement
 from .brain import ChaseContext, GhostBrain
 from .ghost import Ghost

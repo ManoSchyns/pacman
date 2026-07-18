@@ -10,13 +10,13 @@ class SuperPacgums(Pacgums):
         self.radius = int(cell_size * self.radius_ratio)
 
         self.color_flag = True
-        self.timer = 0
+        self.timer = 0.0
 
-    def draw(self, screen: pygame.Surface, dt: int) -> None:
+    def draw(self, screen: pygame.Surface, dt: float) -> None:
         self.timer += dt
 
         if self.timer >= 0.5:
-            self.timer = 0
+            self.timer = 0.0
             self.color_flag = not self.color_flag
 
         if self.color_flag:

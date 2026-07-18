@@ -2,6 +2,8 @@ import pygame
 
 
 class Animation:
+    """Anime une liste de frames a cadence fixe, avec ou sans boucle."""
+
     def __init__(
         self,
         frames: list[pygame.Surface],

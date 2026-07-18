@@ -35,7 +35,7 @@ class GenPacgums:
                 return (pacgum.xp, isinstance(pacgum, SuperPacgums))
         return (0, False)
 
-    def show(self, surface: pygame.Surface, dt: int) -> None:
+    def show(self, surface: pygame.Surface, dt: float) -> None:
         for pacgum in self.list_pacgums:
             pacgum.draw(surface, dt)
 

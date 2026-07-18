@@ -13,7 +13,7 @@ class Pacgums:
         self.color = (255, 255, 255)
         self.radius = int(cell_size * self.radius_ratio)
 
-    def draw(self, screen: pygame.Surface, dt: int) -> None:
+    def draw(self, screen: pygame.Surface, dt: float) -> None:
         pygame.draw.circle(
             screen,
             self.color,
