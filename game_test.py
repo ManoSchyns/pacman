@@ -27,7 +27,7 @@ if __name__ == "__main__":
         action = menu.run()
         if action != "start":
             break
-        game = Game(LEVEL_LIST, 30, 10, 30, 100, 3, "heyy", 42, 90)
+        game = Game(LEVEL_LIST, 30, 10, 30, 100, 3, 42, 90)
         if not game.play(screen):
             break
     pygame.quit()

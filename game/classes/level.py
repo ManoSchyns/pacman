@@ -180,7 +180,8 @@ class Level:
                 return 0
             self.reset_ghosts()
             self.reset_pacman()
-            self.play(player)
+            if not self.waiting_screen(player):
+                return -1
         elif ghost.is_edible():
             player.increase_score(self.points_per_ghost)
             ghost.respawn()

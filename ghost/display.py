@@ -5,7 +5,7 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 
 import pygame  # noqa: E402
-from ghost.animations import Animation  # noqa: E402
+from animation import Animation  # noqa: E402
 from ghost.classes import Blinky, Clyde, Ghost, Inky, Pinky  # noqa: E402
 
 SHEET_PATH = (

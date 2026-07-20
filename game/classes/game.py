@@ -20,7 +20,6 @@ class Game:
                  points_per_super_pacgum: int,
                  points_per_ghost: int,
                  lives: int,
-                 filename_hight: str,
                  seed: int,
                  level_max_time: int) -> None:
 
@@ -29,7 +28,6 @@ class Game:
         self.points_per_super_pacgum = points_per_super_pacgum
         self.points_per_ghost = points_per_ghost
 
-        self.filename_hight = filename_hight
         self.seed = seed
         self.level_max_time = level_max_time
 

@@ -2,7 +2,8 @@ import pygame
 
 
 class TextInput:
-    def __init__(self, rect: pygame.Rect, screen: pygame.Surface):
+    def __init__(self, rect: pygame.Rect | tuple[int, int, int, int],
+                 screen: pygame.Surface):
         self.screen = screen
         self.text_input = pygame.Rect(rect)
         self.font = pygame.font.SysFont(None, 30)

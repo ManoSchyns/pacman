@@ -1,19 +1,31 @@
-BIN='mazegenerator.py'
-CONF='config.json'
+PYTHON = pacman_env/bin/python
+PIP = pacman_env/bin/pip
+FLAKE8 = pacman_env/bin/flake8
+MYPY = pacman_env/bin/mypy
+MAIN = game_test.py
+
+MYPY_FLAGS = --warn-return-any --warn-unused-ignores \
+	--ignore-missing-imports --disallow-untyped-defs --check-untyped-defs
 
 install:
-	python3 -m venv pacman_env \
-	&& source pacman_env/bin/activate \
-	&& pip install -r requirements.txt \
-	&& deactivate
+	python3 -m venv pacman_env
+	$(PIP) install -r requirements.txt
+
 run:
-	python3 -m venv pacman_env \
-	&& source pacman_env/bin/activate \
-	&& python3 $(BIN) $(CONF)\
-	&& deactivate
+	$(PYTHON) $(MAIN)
+
 debug:
-	python -m pdb $(BIN) $(CONF)
+	$(PYTHON) -m pdb $(MAIN)
+
 clean:
-	rm -rf "__pycache__" ".mypy_cache" "mazegen/__pycache__" "solver/__pycache__" ".mypy_cache"
+	find . -type d -name "__pycache__" -not -path "./pacman_env/*" \
+		-exec rm -rf {} +
+	rm -rf .mypy_cache
+
 lint:
-	flake8 . && mypy . --strict
+	$(FLAKE8) . && $(MYPY) . $(MYPY_FLAGS)
+
+lint-strict:
+	$(FLAKE8) . && $(MYPY) . --strict
+
+.PHONY: install run debug clean lint lint-strict

@@ -1,7 +1,7 @@
 from collections.abc import Callable
 from pathlib import Path
 import pygame
-from pacman.animations import Animation
+from animation import Animation
 from .movement import GridMovement
 from .pacman import Pacman
 
