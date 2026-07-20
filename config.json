@@ -1,0 +1,24 @@
+{
+    "level_list" :
+    [
+        [35, 35],
+        [25, 25],
+        [20, 21],
+        [30, 30],
+        [27, 10],
+        [10, 10],
+        [26, 27],
+        [26, 17],
+        [15, 13],
+        [10, 5],
+        [35, 35],
+        [10, 5]
+    ],
+    "number_pacgum": 10,
+    "points_per_pacgum": 10,
+    "points_per_super_pacgum": 20,
+    "points_per_ghost": 30,
+    "lives": 10,
+    "seed": 30,
+    "level_max_time": 100
+}
