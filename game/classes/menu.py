@@ -7,7 +7,7 @@ import pygame
 import pytweening
 
 from ghost.classes import Blinky, Clyde, Ghost, Inky, Pinky
-from pacman.animations import Animation
+from animation import Animation
 from pacman.classes.pacman import Pacman
 from score import Scores
 from sound.mixer import get_mixer

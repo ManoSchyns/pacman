@@ -1,9 +1,11 @@
 import sys
 from pathlib import Path
 
-import pygame
+ROOT = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(ROOT))
 
-from classes.spritesheet import SpriteSheet
+import pygame  # noqa: E402
+from sprietsheet.classes.spritesheet import SpriteSheet  # noqa: E402
 
 WINDOW_WIDTH = 1240
 PADDING = 10

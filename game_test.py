@@ -35,7 +35,6 @@ if __name__ == "__main__":
             config.points_per_super_pacgum,
             config.points_per_ghost,
             config.lives,
-            "test",
             config.seed, config.level_max_time
         )
         if not game.play(screen):
