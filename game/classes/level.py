@@ -1,4 +1,5 @@
 import pygame
+import sys
 from ghost.classes import (AmbushBrain, Blinky, ChaseContext, Clyde,
                            CowardBrain, FlankBrain, GhostBrain, GhostPlayer,
                            Inky, Pinky)
@@ -40,7 +41,14 @@ class Level:
                  points_per_ghost: int, level_max_time: int,
                  curr_level: int, last_level: int) -> None:
         self.screen = screen
-        self.maze = Maze(width, height, screen, seed)
+
+        try:
+            self.maze = Maze(width, height, screen, seed)
+        except Exception:
+            print("Error during maze generation. "
+                  "The provided package is non-functional.")
+            sys.exit(1)
+
         self.maze_surface = self.maze.get_maze_surface()
 
         self.pacgums: GenPacgums = GenPacgums(number_pacgum, points_per_pacgum,
