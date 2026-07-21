@@ -12,6 +12,7 @@ ROOT = Path(__file__).resolve().parents[2]
 FONT_PATH_I = ROOT / "game" / "srcs" / "ARCADE_I.TTF"
 FONT_PATH_R = ROOT / "game" / "srcs" / "ARCADE_R.TTF"
 
+
 class Game:
     """
     A chaque boucle du jeu
