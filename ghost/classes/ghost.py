@@ -4,6 +4,8 @@ from sprietsheet.classes.spritesheet import SpriteSheet
 
 
 class Ghost:
+    """Fantôme générique qui découpe ses animations dans le spritesheet."""
+
     START_INDEX = 0
     COLOR = ""
     DIRECTION_ORDER = ["right", "left", "up", "down"]
@@ -12,6 +14,7 @@ class Ghost:
     EATEN_INDICES = [34, 35]
 
     def __init__(self, sheet_path: str) -> None:
+        """Charge le spritesheet et construit toutes les animations."""
         sheet = SpriteSheet(sheet_path)
         sprites = [image for _, image in sheet.auto_slice()]
         self.animations: dict[str, list[pygame.Surface]] = {}
@@ -33,10 +36,13 @@ class Ghost:
 
     @property
     def name(self) -> str:
+        """Retourne le nom de la classe du fantôme."""
         return type(self).__name__
 
     def actions(self) -> list[str]:
+        """Retourne la liste des animations disponibles."""
         return list(self.animations)
 
     def frames(self, direction: str) -> list[pygame.Surface]:
+        """Retourne les images de l'animation demandée."""
         return self.animations[direction]

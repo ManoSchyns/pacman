@@ -39,6 +39,7 @@ class AudioMixer:
     CH_JINGLE = 5
 
     def __init__(self) -> None:
+        """Ouvre les canaux, charge les sons et règle les volumes."""
         if not pygame.mixer.get_init():
             pygame.mixer.init()
         pygame.mixer.set_num_channels(NUM_CHANNELS)
@@ -83,10 +84,12 @@ class AudioMixer:
 
     # ----- Menu -------------------------------------------------------
     def play_music(self) -> None:
+        """Lance la musique du menu en boucle si elle ne joue pas déjà."""
         if not self.ch_music.get_busy():
             self.ch_music.play(self.music, loops=-1)
 
     def stop_music(self) -> None:
+        """Coupe la musique du menu."""
         self.ch_music.stop()
 
     # ----- Boucle de jeu ---------------------------------------------
@@ -97,12 +100,14 @@ class AudioMixer:
         self._update_duck()
 
     def _update_ambience(self, state: str) -> None:
+        """Relance l'ambiance quand l'état change ou qu'elle s'arrête."""
         if (state != self._ambience_state
                 or not self.ch_ambience.get_busy()):
             self.ch_ambience.play(self._ambience_sounds[state], loops=-1)
             self._ambience_state = state
 
     def _update_waka(self) -> None:
+        """Met le waka en pause tant qu'un son de gomme joue."""
         eating = self.ch_chomp.get_busy() or self.ch_event.get_busy()
         if eating:
             if not self._waka_paused:
@@ -115,33 +120,40 @@ class AudioMixer:
             self.ch_waka.play(self.waka, loops=-1)
 
     def _update_duck(self) -> None:
+        """Rétablit le volume des fonds à la fin du ducking."""
         if self._duck_until and pygame.time.get_ticks() >= self._duck_until:
             self.ch_ambience.set_volume(1.0)
             self.ch_waka.set_volume(1.0)
             self._duck_until = 0
 
     def _duck(self) -> None:
+        """Baisse le volume des fonds pour la durée du ducking."""
         self.ch_ambience.set_volume(DUCK_FACTOR)
         self.ch_waka.set_volume(DUCK_FACTOR)
         self._duck_until = pygame.time.get_ticks() + DUCK_MS
 
     # ----- Evenements -------------------------------------------------
     def play_chomp(self) -> None:
+        """Joue le son d'une pacgum mangée."""
         self.ch_chomp.play(self.chomp)
 
     def play_super(self) -> None:
+        """Joue le son de super pacgum et baisse les fonds."""
         self.ch_event.play(self.super)
         self._duck()
 
     def play_death(self) -> None:
+        """Coupe les sons de jeu et joue le jingle de mort."""
         self.stop_gameplay()
         self.ch_jingle.play(self.death)
 
     def play_game_over(self) -> None:
+        """Coupe les sons de jeu et joue le jingle de fin de partie."""
         self.stop_gameplay()
         self.ch_jingle.play(self.game_over)
 
     def stop_gameplay(self) -> None:
+        """Arrête les fonds du jeu et remet le mixage à zéro."""
         self.ch_ambience.stop()
         self.ch_waka.stop()
         self.ch_ambience.set_volume(1.0)

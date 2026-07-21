@@ -3,8 +3,10 @@ from typing import Any
 
 
 class Scores:
+    """Gère les meilleurs scores persistants du jeu."""
 
     def __init__(self) -> None:
+        """Initialise les scores et charge le fichier existant."""
         self.dict_scores: dict[str, int] = {}
         self._import_scores()
 
@@ -58,6 +60,7 @@ class Scores:
         """
 
         def is_valid() -> bool:
+            """Indique si le nom est alphanumérique ou espace."""
             return all(caract.isalnum() or caract.isspace()
                        for caract in name)
 

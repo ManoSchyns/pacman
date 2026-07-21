@@ -22,6 +22,7 @@ KEYS = [
 
 
 def chek_file_name(filename: str) -> bool:
+    """Vérifie que le fichier porte bien l'extension .json."""
     extension: list[str] = filename.split(".")
     err_flag: bool = False
 
@@ -36,6 +37,7 @@ def chek_file_name(filename: str) -> bool:
 
 
 def suppress_comment(file: TextIO) -> str:
+    """Retourne le contenu du fichier sans les lignes de commentaire."""
     lines_without_comments: list[str] = []
     for line in file:
         if not any(line.strip().startswith(comment)
@@ -45,6 +47,14 @@ def suppress_comment(file: TextIO) -> str:
 
 
 def json_without_comment(filename: str) -> tuple[bool, dict[str, Any]]:
+    """Charge le fichier JSON une fois les commentaires supprimés.
+
+    Args:
+        filename: chemin du fichier de configuration.
+
+    Returns:
+        Un tuple (succès de la lecture, données lues).
+    """
     datas: dict[str, Any] = {}
     try:
         with open(filename, "r") as file:
@@ -60,6 +70,7 @@ def json_without_comment(filename: str) -> tuple[bool, dict[str, Any]]:
 
 
 def check_keys(datas: dict[str, Any]) -> None:
+    """Signale les clés absentes de la configuration."""
     for key in KEYS:
         if key not in datas.keys():
             print(f"\nKey : {key} is missing. "
@@ -67,6 +78,14 @@ def check_keys(datas: dict[str, Any]) -> None:
 
 
 def parse(filename: str) -> tuple[bool, Config]:
+    """Analyse le fichier de configuration et construit la Config.
+
+    Args:
+        filename: chemin du fichier de configuration.
+
+    Returns:
+        Un tuple (succès de l'analyse, configuration utilisable).
+    """
     datas: dict[str, Any]
     ret_val: tuple[bool, dict[str, Any]]
 

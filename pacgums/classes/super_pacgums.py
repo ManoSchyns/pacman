@@ -3,8 +3,10 @@ import pygame
 
 
 class SuperPacgums(Pacgums):
+    """Représente une super pastille clignotante et plus grosse."""
 
     def __init__(self, xp: int, x: int, y: int, cell_size: int) -> None:
+        """Initialise la super pastille et son timer de clignotement."""
         super().__init__(xp, x, y, cell_size)
         self.radius_ratio = 0.2
         self.radius = int(cell_size * self.radius_ratio)
@@ -13,6 +15,7 @@ class SuperPacgums(Pacgums):
         self.timer = 0.0
 
     def draw(self, screen: pygame.Surface, dt: float) -> None:
+        """Dessine la super pastille en alternant sa couleur."""
         self.timer += dt
 
         if self.timer >= 0.5:

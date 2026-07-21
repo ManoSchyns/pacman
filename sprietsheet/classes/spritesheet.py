@@ -4,12 +4,16 @@ from .bases import SpriteSheet as SpriteSheetBase
 
 
 class SpriteSheet(SpriteSheetBase):
+    """Planche de sprites capable de se découper toute seule."""
+
     def __init__(self, filename: str, bg_threshold: int = 40) -> None:
+        """Charge la planche et retient le seuil de détection du fond."""
         super().__init__(filename)
         self.filename = filename
         self.bg_threshold = bg_threshold
 
     def is_background(self, color: pygame.Color) -> bool:
+        """Indique si la couleur est assez sombre pour être du fond."""
         r: int = color.r
         g: int = color.g
         b: int = color.b
@@ -23,6 +27,7 @@ class SpriteSheet(SpriteSheetBase):
     def sprite_at(
         self, rectangle: pygame.Rect | tuple[int, int, int, int]
     ) -> pygame.Surface:
+        """Extrait le sprite du rectangle et rend son fond transparent."""
         rect = pygame.Rect(rectangle)
         image = pygame.Surface(rect.size, pygame.SRCALPHA)
         image.blit(self.sheet, (0, 0), rect)
@@ -35,9 +40,11 @@ class SpriteSheet(SpriteSheetBase):
     def sprites_at(
         self, rects: list[pygame.Rect] | list[tuple[int, int, int, int]]
     ) -> list[pygame.Surface]:
+        """Retourne les sprites des rectangles donnés."""
         return [self.sprite_at(rect) for rect in rects]
 
     def grid_rects(self, columns: int, rows: int) -> list[pygame.Rect]:
+        """Retourne les rectangles d'une grille régulière de sprites."""
         pitch_w = self.sheet.get_width() / columns
         pitch_h = self.sheet.get_height() / rows
         return [
@@ -52,9 +59,19 @@ class SpriteSheet(SpriteSheetBase):
         ]
 
     def load_grid(self, columns: int, rows: int) -> list[pygame.Surface]:
+        """Découpe la planche selon une grille de colonnes et lignes."""
         return self.sprites_at(self.grid_rects(columns, rows))
 
     def find_sprite_rects(self, min_pixels: int = 4) -> list[pygame.Rect]:
+        """Détecte le rectangle de chaque sprite de la planche.
+
+        Args:
+            min_pixels: taille minimale d'une composante connexe.
+
+        Returns:
+            les rectangles fusionnés, découpés et triés en ordre de
+            lecture.
+        """
         threshold = (self.bg_threshold,) * 3 + (255,)
         mask = pygame.mask.from_threshold(
             self.sheet, (0, 0, 0, 255), threshold
@@ -73,16 +90,19 @@ class SpriteSheet(SpriteSheetBase):
     def auto_slice(
         self, min_pixels: int = 4
     ) -> list[tuple[pygame.Rect, pygame.Surface]]:
+        """Retourne chaque sprite détecté avec son rectangle d'origine."""
         rects = self.find_sprite_rects(min_pixels)
         return [(rect, self.sprite_at(rect)) for rect in rects]
 
     @staticmethod
     def scale(image: pygame.Surface, factor: float) -> pygame.Surface:
+        """Retourne l'image redimensionnée par le facteur donné."""
         return pygame.transform.scale_by(image, factor)
 
     def _split_wide_rects(
         self, rects: list[pygame.Rect]
     ) -> list[pygame.Rect]:
+        """Découpe les rectangles anormalement larges pour leur ligne."""
         if not rects:
             return rects
         widths = sorted(rect.width for rect in rects)
@@ -100,6 +120,7 @@ class SpriteSheet(SpriteSheetBase):
         return result
 
     def _split_at_seam(self, rect: pygame.Rect) -> list[pygame.Rect]:
+        """Coupe le rectangle sur sa colonne la plus vide, si possible."""
         third = rect.width // 3
         candidates = range(rect.x + third, rect.x + rect.width - third)
         seam = min(candidates,
@@ -112,6 +133,7 @@ class SpriteSheet(SpriteSheetBase):
         return [left, right]
 
     def _column_fill(self, rect: pygame.Rect, column: int) -> int:
+        """Compte les pixels non vides d'une colonne du rectangle."""
         count = 0
         for y in range(rect.y, rect.y + rect.height):
             if not self.is_background(self.sheet.get_at((column, y))):
@@ -120,6 +142,7 @@ class SpriteSheet(SpriteSheetBase):
 
     @staticmethod
     def _merge_overlapping(rects: list[pygame.Rect]) -> list[pygame.Rect]:
+        """Fusionne les rectangles qui se chevauchent."""
         merged = True
         while merged:
             merged = False
@@ -139,6 +162,7 @@ class SpriteSheet(SpriteSheetBase):
     def _sort_reading_order(
         rects: list[pygame.Rect], row_tolerance: int = 8
     ) -> list[pygame.Rect]:
+        """Trie les rectangles ligne par ligne, de gauche à droite."""
         ordered: list[pygame.Rect] = []
         remaining = sorted(rects, key=lambda r: int(r.top))
         while remaining:

@@ -14,11 +14,13 @@ SHEET_PATH = (
 
 
 class GhostPlayer:
+    """Fantôme jouable qui relie sprites, déplacement et IA."""
 
     def __init__(self, ghost_class: type[Ghost],
                  position: tuple[int, int], size: int,
                  movement: GridMovement | None = None,
                  brain: GhostBrain | None = None) -> None:
+        """Prépare le fantôme, ses animations et son état initial."""
         self.ghost = ghost_class(str(SHEET_PATH))
         self.spawn_position = position
         self.movement = movement
@@ -44,10 +46,8 @@ class GhostPlayer:
 
         self.rect = self.animation.current_frame().get_rect(center=position)
 
-    """
-    Fait respawn le fantome
-    """
     def respawn(self) -> None:
+        """Replace le fantôme à sa position de départ."""
         spawn: tuple[int, int] = self.spawn_position
         time = pygame.time.get_ticks()
 
@@ -59,10 +59,8 @@ class GhostPlayer:
         self.movement.dead_cooldown = 5
         self.movement.dead_cooldown_start = time
 
-    """
-    Return true si il est mangeable
-    """
     def is_edible(self) -> bool:
+        """Retourne True si le fantôme est encore mangeable."""
         if not self.edible:
             return False
 
@@ -74,11 +72,12 @@ class GhostPlayer:
                 self.movement.speed = self.movement.normal_speed
         return self.edible
 
-    """
-    Return true si le fantome est dans sa phase de clignotement
-    bleu/blanc (les 2 dernieres secondes de vulnerabilite)
-    """
     def is_reviving(self) -> bool:
+        """Retourne True pendant le clignotement bleu/blanc.
+
+        Returns:
+            True sur les 2 dernières secondes de vulnérabilité.
+        """
         if not self.is_edible():
             return False
         elapsed = (pygame.time.get_ticks() -
@@ -86,6 +85,7 @@ class GhostPlayer:
         return self.edible_cooldown - elapsed <= 2
 
     def update_animation(self) -> None:
+        """Sélectionne l'animation correspondant à l'état du fantôme."""
         key: str
 
         if self.is_edible():
@@ -103,6 +103,12 @@ class GhostPlayer:
 
     def update(self, dt: float,
                context: ChaseContext | None = None) -> None:
+        """Met à jour la décision de l'IA, le déplacement et l'animation.
+
+        Args:
+            dt: temps écoulé depuis la dernière frame, en secondes.
+            context: état du jeu transmis à l'IA du fantôme.
+        """
         if (self.movement is None or self.brain is None
                 or context is None):
             self.animation.update(dt)
@@ -132,6 +138,7 @@ class GhostPlayer:
         self.animation.update(dt)
 
     def draw(self, screen: pygame.Surface) -> None:
+        """Dessine la frame courante du fantôme sur l'écran."""
         screen.blit(
             self.animation.current_frame(),
             self.rect

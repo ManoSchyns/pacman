@@ -33,11 +33,17 @@ GAME_OVER = 9
 
 
 def _ensure_mixer() -> None:
+    """Initialise le mixeur pygame s'il ne l'est pas déjà."""
     if not pygame.mixer.get_init():
         pygame.mixer.init()
 
 
 def _samples() -> tuple[array.array, int, int]:
+    """Charge la compilation mp3 et retourne ses échantillons bruts.
+
+    Returns:
+        les échantillons 16 bits, la fréquence et le nombre de voies.
+    """
     _ensure_mixer()
     full = pygame.mixer.Sound(str(SOUND_PATH))
     samples: array.array = array.array("h")

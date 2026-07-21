@@ -7,10 +7,12 @@ EAST: int = 2
 
 
 class Maze:
+    """Génère le labyrinthe, son affichage et ses points d'apparition."""
 
     def __init__(self, width: int, height: int,
                  screen: pygame.Surface,
                  seed: int = 0) -> None:
+        """Initialise le labyrinthe et construit sa surface."""
 
         self._cell_size: int = min(screen.get_width() // width,
                                    (screen.get_height() - 50) // height)
@@ -27,11 +29,8 @@ class Maze:
             height * self._cell_size + self._thickness))
         self._gen_maze_surface()
 
-    """
-    Dessine le labyrinthe sur une surface.
-    Enregistre les collisions dans _walls
-    """
     def _gen_maze_surface(self) -> None:
+        """Dessine le labyrinthe et enregistre les murs dans _walls."""
 
         NORTH: int = 1
         EAST: int = 2
@@ -96,6 +95,7 @@ class Maze:
     # Return True si pacman est sur un mur -> collison
     # False si non
     def check_collisions(self, pacman_rect: pygame.Rect) -> bool:
+        """Vérifie si le rectangle de Pacman touche un mur."""
         for wall in self._walls:
             if pacman_rect.colliderect(wall):
                 return True
@@ -103,19 +103,23 @@ class Maze:
 
     # Returne l'affichage du lab
     def get_maze_surface(self) -> pygame.Surface:
+        """Retourne la surface d'affichage du labyrinthe."""
         return self._maze_surface
 
     # Return en int le  de pacman selon la taille des couloirs
     # Pacman sera un peu plus petit que la taille des couloir *0.8
     def get_pacman_size(self) -> int:
+        """Retourne la taille de Pacman en pixels."""
         corridor_size: int = self._cell_size - self._thickness
         return int(corridor_size * 0.7)
 
     def get_cell_size(self) -> int:
+        """Retourne la taille d'une case en pixels."""
         return self._cell_size
 
     # Return les coordonnées du centre
     def get_center_maze(self) -> tuple[int, int]:
+        """Retourne les coordonnées du centre libre du labyrinthe."""
         x_center: int = self._width // 2
         y_center: int = self._heigth // 2
 
@@ -125,6 +129,15 @@ class Maze:
                 y_center * self._cell_size + self._cell_size // 2)
 
     def is_open(self, cell: tuple[int, int], direction: str) -> bool:
+        """Vérifie si un déplacement depuis une case est possible.
+
+        Args:
+            cell: coordonnées (x, y) de la case de départ.
+            direction: "up", "down", "left" ou "right".
+
+        Returns:
+            True si la case voisine existe et est atteignable.
+        """
         x, y = cell
         if direction == "up":
             target = (x, y - 1)
@@ -148,11 +161,18 @@ class Maze:
         return bool(self._maze[target_y][target_x] != 15)
 
     def _wall_bit(self, x: int, y: int, bit: int) -> bool:
+        """Vérifie si une case porte le mur correspondant au bit donné."""
         if not (0 <= x < self._width and 0 <= y < self._heigth):
             return True
         return bool(self._maze[y][x] & bit)
 
     def get_ghost_spawns(self) -> list[tuple[int, int]]:
+        """Retourne les points d'apparition des fantômes aux 4 coins.
+
+        Returns:
+            les coordonnées en pixels, repliées sur la case libre la
+            plus proche si le coin est plein.
+        """
         corners = [(0, 0),
                    (self._width - 1, 0),
                    (0, self._heigth - 1),
@@ -165,17 +185,12 @@ class Maze:
                            y * self._cell_size + self._cell_size // 2))
         return spawns
 
-    """
-    Return les points de spawn pour les superpacgum
-    -> Mis directement dans le coin
-    """
     def get_super_pacgums_spawn(self) -> list[tuple[int, int]]:
+        """Retourne les points d'apparition des super pacgums (coins)."""
         return self.get_ghost_spawns()
 
-    """
-    Return  toutes les cellules disponibles
-    """
     def get_cell_available(self) -> list[tuple[int, int]]:
+        """Retourne les cases libres hors spawns et centre du labyrinthe."""
         available: list[tuple[int, int]] = []
 
         to_avoid: list[tuple[int, int]] = self.get_ghost_spawns()
@@ -192,15 +207,14 @@ class Maze:
 
         return available
 
-    """
-    Return les points de spawn des pacgums
-    """
     def get_pacgums_spawn(self, number_of_spawn: int) -> list[tuple[int, int]]:
+        """Retourne des points d'apparition aléatoires pour les pacgums."""
         available: list[tuple[int, int]] = self.get_cell_available()
         random.shuffle(available)
         return available[:number_of_spawn]
 
     def _closest_free_cell(self, x: int, y: int) -> tuple[int, int]:
+        """Retourne la case libre la plus proche du coin donné."""
         step_x = 1 if x == 0 else -1
         step_y = 1 if y == 0 else -1
 
@@ -217,4 +231,5 @@ class Maze:
     # Return la derniere partie de surface utilisée
     # A partir de ou on peut utiliser les pixel
     def get_end_surface(self) -> int:
+        """Retourne la coordonnée y de fin du labyrinthe en pixels."""
         return self._heigth * self._cell_size + self._thickness + 10

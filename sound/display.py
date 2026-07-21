@@ -20,6 +20,7 @@ BLUE = (33, 33, 222)
 
 def draw(screen: pygame.Surface, fonts: dict[str, pygame.font.Font],
          selected: int, playing: int) -> list[pygame.Rect]:
+    """Dessine la liste des effets et retourne leurs rectangles."""
     screen.fill(BACKGROUND)
     title = fonts["title"].render("SOUND EFFECTS", True, YELLOW)
     screen.blit(title, title.get_rect(center=(WINDOW_SIZE[0] // 2, 34)))
@@ -63,6 +64,7 @@ def draw(screen: pygame.Surface, fonts: dict[str, pygame.font.Font],
 
 
 def main() -> None:
+    """Lance la visionneuse des effets sonores."""
     pygame.init()
     pygame.mixer.init()
     screen = pygame.display.set_mode(WINDOW_SIZE)
@@ -80,6 +82,7 @@ def main() -> None:
     channel: pygame.mixer.Channel | None = None
 
     def play(index: int) -> None:
+        """Joue l'effet demandé après avoir coupé le précédent."""
         nonlocal channel, playing
         if channel is not None:
             channel.stop()

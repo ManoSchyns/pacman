@@ -22,6 +22,7 @@ ACCENT = (255, 220, 0)
 
 
 def build_animations(pacman: Pacman) -> dict[str, Animation]:
+    """Retourne les animations de Pacman agrandies à l'échelle."""
     return {
         action: Animation(
             [
@@ -39,6 +40,14 @@ def draw(
     action: str,
     font: pygame.font.Font,
 ) -> None:
+    """Dessine la frame courante, le titre et la barre d'infos.
+
+    Args:
+        screen: surface de la fenêtre.
+        animation: animation en cours de lecture.
+        action: nom de l'animation affiché en titre.
+        font: police utilisée pour les textes.
+    """
     screen.fill(BACKGROUND)
     frame = animation.current_frame()
     rect = frame.get_rect(
@@ -58,6 +67,7 @@ def draw(
 
 
 def main() -> None:
+    """Lance la fenêtre de démonstration des animations."""
     pygame.init()
     pygame.display.set_mode((1, 1), pygame.HIDDEN)
     pacman = Pacman(str(SHEET_PATH), BASE_SIZE)
