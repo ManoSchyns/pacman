@@ -2,4 +2,6 @@ pygame-ce==2.5.7
 pytweening==1.2.0
 flake8==7.3.0
 mypy==2.3.0
+pydantic
+pyinstaller
 ./maze/lib/mazegenerator-00001-py3-none-any.whl

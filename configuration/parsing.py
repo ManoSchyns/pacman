@@ -31,7 +31,6 @@ def chek_file_name(filename: str) -> bool:
         err_flag = True
     if err_flag:
         print("The File must be a [.json] File")
-        print("Using the default configuration")
         return False
     return True
 
@@ -45,7 +44,7 @@ def suppress_comment(file: TextIO) -> str:
     return ("".join(lines_without_comments))
 
 
-def json_without_comment(filename: str) -> dict[str, Any]:
+def json_without_comment(filename: str) -> tuple[bool, dict[str, Any]]:
     datas: dict[str, Any] = {}
     try:
         with open(filename, "r") as file:
@@ -53,26 +52,32 @@ def json_without_comment(filename: str) -> dict[str, Any]:
             datas = json.loads(json_text)
     except (FileNotFoundError, PermissionError) as e:
         print(f"Error opening the file: {e}")
-        print("Using the default configuration")
+        return (False, datas)
     except (json.decoder.JSONDecodeError) as e:
         print(f"Error configuration of the json: {e}")
-        print("Using the default configuration")
-    return datas
+        return (False, datas)
+    return (True, datas)
 
 
 def check_keys(datas: dict[str, Any]) -> None:
     for key in KEYS:
         if key not in datas.keys():
-            print(f"Key : {key} is missing. "
-                  f"Using default configuration for {key}")
+            print(f"\nKey : {key} is missing. "
+                  f"Using default configuration for {key}\n")
 
 
-def parse(filename: str) -> Config:
+def parse(filename: str) -> tuple[bool, Config]:
+    datas: dict[str, Any]
+    ret_val: tuple[bool, dict[str, Any]]
+
     if not chek_file_name(filename):
-        return Config()
-    datas: dict[str, Any] = json_without_comment(filename)
+        return (False, Config())
+    ret_val = json_without_comment(filename)
+    if not ret_val[0]:
+        return (False, Config())
+    datas = ret_val[1]
     check_keys(datas)
-    return(Config(**datas))
+    return (True, Config(**datas))
 
 
 if __name__ == "__main__":
