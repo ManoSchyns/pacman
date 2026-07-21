@@ -1,6 +1,5 @@
 from pydantic import BaseModel, Field, field_validator
 from typing import Any
-import random
 
 
 DEFAULT_LIST_LEVEL: list[tuple[int, int]] = [
@@ -31,13 +30,6 @@ class Config(BaseModel):
     @classmethod
     def validate_list_level(cls: Any, arg: Any) -> list[tuple[int, int]]:
 
-        def adding_n_random_level(n: int,
-                                  list_level: list[tuple[int, int]]) -> None:
-            add_random = random.Random()
-            for i in range (n):
-                list_level.append(add_random.choice(
-                    DEFAULT_LIST_LEVEL))
-
         list_level: list[tuple[int, int]] = []
 
         if not isinstance(arg, list):
@@ -67,8 +59,10 @@ class Config(BaseModel):
         if curr_n_levels < 10:
             missings_level: int = 10 - curr_n_levels
             print("\nLevel list must contains at least 10 valid levels")
-            print(f"===> Adding {missings_level} random levels from de default configuration\n")
-            adding_n_random_level(missings_level, list_level)
+            print(f"===> Adding {missings_level} levels from "
+                  "de default configuration\n")
+            list_level.extend(DEFAULT_LIST_LEVEL[:missings_level])
+            print(list_level)
 
         return list_level
 

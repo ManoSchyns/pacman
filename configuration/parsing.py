@@ -67,14 +67,17 @@ def check_keys(datas: dict[str, Any]) -> None:
 
 
 def parse(filename: str) -> tuple[bool, Config]:
+    datas: dict[str, Any]
+    ret_val: tuple[bool, dict[str, Any]]
+
     if not chek_file_name(filename):
         return (False, Config())
-    ret_val: tuple[bool, dict[str, Any]] = json_without_comment(filename) 
+    ret_val = json_without_comment(filename)
     if not ret_val[0]:
         return (False, Config())
-    datas: dict[str, Any] = ret_val[1]
+    datas = ret_val[1]
     check_keys(datas)
-    return(True, Config(**datas))
+    return (True, Config(**datas))
 
 
 if __name__ == "__main__":
