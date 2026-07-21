@@ -2,7 +2,7 @@ PYTHON = pacman_env/bin/python
 PIP = pacman_env/bin/pip
 FLAKE8 = pacman_env/bin/flake8
 MYPY = pacman_env/bin/mypy
-MAIN = game_test.py
+MAIN = main.py
 CONFIG = config.json
 
 MYPY_FLAGS = --warn-return-any --warn-unused-ignores \

@@ -12,13 +12,18 @@ if __name__ == "__main__":
     pygame.init()
 
     config: Config
+    ret_val: tuple[bool, Config]
     args = sys.argv
 
     if len(args) != 2:
-        print("The program must take only ONE argument (A json file)")
-        exit()
+        print("\nThe program must take only ONE argument (A json file)\n")
+        sys.exit(1)
 
-    config = parse(args[1])
+    ret_val = parse(args[1])
+    if not ret_val[0]:
+        sys.exit(1)
+
+    config = ret_val[1]
 
     screen = pygame.display.set_mode((SCREEN_WIDTH,
                                       SCREEN_HEIGTH + 10))
