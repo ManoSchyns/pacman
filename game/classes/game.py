@@ -5,7 +5,12 @@ from .level import Level
 from player import Player
 from game.srcs import TextInput
 from sound.mixer import get_mixer
+from pathlib import Path
 
+
+ROOT = Path(__file__).resolve().parents[2]
+FONT_PATH_I = ROOT / "game" / "srcs" / "ARCADE_I.TTF"
+FONT_PATH_R = ROOT / "game" / "srcs" / "ARCADE_R.TTF"
 
 class Game:
     """
@@ -37,10 +42,10 @@ class Game:
         self.final_level = len(level_list)
         self.player = Player(lives)
 
-        self.font_80 = pygame.font.Font("game/srcs/ARCADE_I.TTF", 80)
-        self.font_40 = pygame.font.Font("game/srcs/ARCADE_I.TTF", 40)
-        self.font_20 = pygame.font.Font("game/srcs/ARCADE_I.TTF", 20)
-        self.font_15 = pygame.font.Font("game/srcs/ARCADE_R.TTF", 15)
+        self.font_80 = pygame.font.Font(str(FONT_PATH_I), 80)
+        self.font_40 = pygame.font.Font(str(FONT_PATH_I), 40)
+        self.font_20 = pygame.font.Font(str(FONT_PATH_I), 20)
+        self.font_15 = pygame.font.Font(str(FONT_PATH_R), 15)
 
         self.mixer = get_mixer()
 
