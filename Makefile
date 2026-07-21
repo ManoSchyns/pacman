@@ -3,6 +3,7 @@ PIP = pacman_env/bin/pip
 FLAKE8 = pacman_env/bin/flake8
 MYPY = pacman_env/bin/mypy
 MAIN = game_test.py
+CONFIG = config.json
 
 MYPY_FLAGS = --warn-return-any --warn-unused-ignores \
 	--ignore-missing-imports --disallow-untyped-defs --check-untyped-defs
@@ -12,7 +13,7 @@ install:
 	$(PIP) install -r requirements.txt
 
 run:
-	$(PYTHON) $(MAIN)
+	$(PYTHON) $(MAIN) $(CONFIG)
 
 debug:
 	$(PYTHON) -m pdb $(MAIN)
