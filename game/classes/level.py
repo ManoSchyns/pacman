@@ -1,5 +1,6 @@
 import pygame
 import sys
+import random
 from ghost.classes import (AmbushBrain, Blinky, ChaseContext, Clyde,
                            CowardBrain, FlankBrain, GhostBrain, GhostPlayer,
                            Inky, Pinky)
@@ -48,6 +49,10 @@ class Level:
             sys.exit(1)
 
         self.maze_surface = self.maze.get_maze_surface()
+
+        self.tmp_maze_surface = self.maze_surface
+        self.cheater_mode: bool = False
+        self.timer_cheater_mode: float = 0.0
 
         self.pacgums: GenPacgums = GenPacgums(number_pacgum, points_per_pacgum,
                                               points_per_super_pacgum,
@@ -98,13 +103,20 @@ class Level:
                 self.mixer.update_gameplay(self.ghost_sound_state())
                 dt = clock.tick(60)/1000
 
+                if self.cheater_mode:
+                    self.maze_with_cheater_mode(dt)
+
                 # touches clavier
                 for event in pygame.event.get():
                     if event.type == pygame.QUIT:
                         return -1
                     if event.type == pygame.KEYDOWN:
-                        if event.key == pygame.K_SPACE:
+                        if event.key == pygame.K_SPACE and self.cheater_mode:
                             return 1
+                        if event.key == pygame.K_f and self.cheater_mode:
+                            self.freeze_ghost()
+                        if event.key == pygame.K_c:
+                            self.cheater_mode = not self.cheater_mode
                         if event.key == pygame.K_ESCAPE:
                             self.mixer.stop_gameplay()
                             if not self.waiting_screen(player):
@@ -117,7 +129,7 @@ class Level:
                 self.try_eat(player)
 
                 self.screen.fill((0, 0, 0))
-                self.screen.blit(self.maze.get_maze_surface(), (0, 0))
+                self.screen.blit(self.maze_surface, (0, 0))
                 self.pacman.draw(self.screen)
                 self.pacgums.show(self.screen, dt)
 
@@ -382,3 +394,27 @@ class Level:
         elapsed_time: int = pygame.time.get_ticks() - self.start_time
         elapsed_time = elapsed_time // 1000
         return elapsed_time
+
+    def freeze_ghost(self) -> None:
+        """Permet de bloquer les fantomes sur
+        place et desactive leurs collisions"""
+        for ghost in self.ghosts:
+            if ghost.movement is not None:
+                if ghost.movement.dead_cooldown == 99999:
+                    ghost.movement.dead_cooldown = 1
+                else:
+                    ghost.movement.dead_cooldown = 99999
+
+    def maze_with_cheater_mode(self, dt: float) -> None:
+        """Change les couleurs du labyrinthe aleatoirement
+        lorsque le mode cheater est actif"""
+        self.timer_cheater_mode += dt
+
+        if self.timer_cheater_mode >= 1.0:
+            self.timer_cheater_mode = 0.0
+            r: int = random.randint(0, 255)
+            g: int = random.randint(0, 255)
+            b: int = random.randint(0, 255)
+            self.maze._walls_color = (r, g, b)
+            self.maze._gen_maze_surface()
+            self.maze_surface = self.maze.get_maze_surface()
