@@ -10,6 +10,7 @@ from pacman.classes.movement import GridMovement
 from player import Player
 from pacgums.classes.gen_pacgums import GenPacgums
 from sound.mixer import get_mixer
+from .pause import PauseMenu
 
 GHOST_BASE_SPEED = 3.0
 BLINKY_SPEED_PER_LEVEL = 0.25
@@ -74,6 +75,7 @@ class Level:
         self.mixer = get_mixer()
 
         self.start_time = pygame.time.get_ticks()
+        self.pause_menu: PauseMenu | None = None
 
     def play(self, player: Player) -> int:
         """Déroule la boucle de jeu du niveau.
@@ -85,8 +87,9 @@ class Level:
             player: joueur dont on suit le score et les vies.
 
         Returns:
-            -1 si la fenêtre doit être quittée, 0 si le joueur a perdu,
-            1 si le niveau est gagné.
+            -2 si le joueur revient au menu depuis la pause, -1 si la
+            fenêtre doit être quittée, 0 si le joueur a perdu, 1 si le
+            niveau est gagné.
         """
         clock: pygame.time.Clock = pygame.time.Clock()
 
@@ -118,9 +121,11 @@ class Level:
                         if event.key == pygame.K_c:
                             self.cheater_mode = not self.cheater_mode
                         if event.key == pygame.K_ESCAPE:
-                            self.mixer.stop_gameplay()
-                            if not self.waiting_screen(player):
+                            action = self.open_pause_menu()
+                            if action == "quit":
                                 return -1
+                            if action == "menu":
+                                return -2
 
                 self.pacman.handle_input()
 
@@ -159,6 +164,33 @@ class Level:
             return 1
         finally:
             self.mixer.stop_gameplay()
+
+    def open_pause_menu(self) -> str:
+        """Met la partie en pause et retourne le choix du joueur.
+
+        Les chronos du niveau et des fantômes sont décalés de la durée
+        de la pause pour ne pas pénaliser le joueur.
+
+        Returns:
+            "resume", "menu" ou "quit".
+        """
+        if self.pacman is None:
+            return "quit"
+        self.mixer.stop_gameplay()
+        if self.pause_menu is None:
+            self.pause_menu = PauseMenu(self.screen,
+                                        self.pacman.sprite.frames("right"))
+
+        paused_at = pygame.time.get_ticks()
+        action = self.pause_menu.run()
+        paused_ms = pygame.time.get_ticks() - paused_at
+
+        self.start_time += paused_ms
+        for ghost in self.ghosts:
+            ghost.start_edible_cooldown += paused_ms
+            if ghost.movement is not None:
+                ghost.movement.dead_cooldown_start += paused_ms
+        return action
 
     def ghost_sound_state(self) -> str:
         """Retourne l'état sonore de fond des fantômes.
