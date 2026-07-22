@@ -23,6 +23,7 @@ debug:
 clean:
 	find . -type d -name "__pycache__" -not -path "./$(ENV)/*" \
 		-exec rm -rf {} +
+	rm -rf $(ENV)
 	rm -rf .mypy_cache
 
 lint:
