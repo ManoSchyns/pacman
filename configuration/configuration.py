@@ -123,7 +123,7 @@ class Config(BaseModel):
     @classmethod
     def validate_points_per_ghost(cls: Any, arg: Any) -> int:
         """Valide les points par fantôme mangé, sinon retourne 40."""
-        if not cls.is_positive_int("points_per_ghost", int(arg)):
+        if not cls.is_positive_int("points_per_ghost", arg):
             return 40
         return int(arg)
 

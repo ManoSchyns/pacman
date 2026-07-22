@@ -24,13 +24,8 @@ KEYS = [
 def chek_file_name(filename: str) -> bool:
     """Vérifie que le fichier porte bien l'extension .json."""
     extension: list[str] = filename.split(".")
-    err_flag: bool = False
 
-    if len(extension) != 2:
-        err_flag = True
-    elif extension[1] != "json":
-        err_flag = True
-    if err_flag:
+    if extension[len(extension) - 1] != "json":
         print("The File must be a [.json] File")
         return False
     return True
