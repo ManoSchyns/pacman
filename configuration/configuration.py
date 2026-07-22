@@ -58,9 +58,9 @@ class Config(BaseModel):
                 print("\nThe width and height of the "
                       "levels must be integer values.")
 
-            elif data[0] < 2 or data[1] < 2 or data[0] > 35 or data[1] > 35:
+            elif data[0] < 7 or data[1] < 7 or data[0] > 50 or data[1] > 50:
                 print("\nThe width and height of the levels "
-                      "must not be less than 2 or greater than 35.")
+                      "must not be less than 7 or greater than 50.")
 
             else:
                 list_level.append((data[0], data[1]))

@@ -52,7 +52,7 @@ class GridMovement:
         self.wanted_direction = direction
         self.moving = True
 
-        self.dead_cooldown = 1
+        self.dead_cooldown = 2
         self.dead_cooldown_start = pygame.time.get_ticks()
 
     def can_move(self) -> bool:
