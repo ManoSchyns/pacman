@@ -345,7 +345,9 @@ class MainMenu:
                 lines = tuple_scores
         else:
             lines = ("ARROW KEYS : MOVE", "ESC : PAUSE",
-                     "SPACE : SKIP LEVEL", "",
+                     "C : Active Cheat Mode",
+                     "F (In Cheat Mode): Freeze ghosts",
+                     "SPACE (In Cheat Mode): SKIP Level",
                      "EAT ALL PACGUMS", "AVOID THE GHOSTS !")
         if not self._show_page(label, lines):
             return "quit"
