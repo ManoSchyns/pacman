@@ -2,8 +2,11 @@ import pygame
 
 
 class TextInput:
+    """Champ de saisie de texte affiché sur une surface pygame."""
+
     def __init__(self, rect: pygame.Rect | tuple[int, int, int, int],
                  screen: pygame.Surface):
+        """Initialise le champ de saisie avec sa zone et sa police."""
         self.screen = screen
         self.text_input = pygame.Rect(rect)
         self.font = pygame.font.SysFont(None, 30)
@@ -11,14 +14,18 @@ class TextInput:
         self.active: bool = False
         self.first_active = True
 
-    """
-    Return 1 si le text a été changé
-    -1 si exit
-    0 si pas de changement
-    """
     def handle_input(self, event: pygame.event.Event) -> int:
+        """Met à jour le texte saisi à partir d'un évènement pygame.
+
+        Args:
+            event: évènement clavier ou souris à traiter.
+
+        Returns:
+            1 si le texte a été changé, -1 si sortie, 0 sinon.
+        """
 
         def check_col() -> bool:
+            """Retourne True si le clic est dans la zone de saisie."""
             if self.text_input.collidepoint(event.pos):
                 return True
             return False
@@ -43,6 +50,7 @@ class TextInput:
         return change
 
     def draw(self) -> None:
+        """Dessine le champ de saisie et son texte à l'écran."""
         pygame.draw.rect(
             self.screen,
             (255, 255, 255),
@@ -72,6 +80,7 @@ class TextInput:
         self.screen.blit(text, text_rect)
 
     def get_value(self) -> str:
+        """Retourne le texte saisi, ou une chaîne vide si aucun."""
         if self.text == "Your name":
             return ""
         return self.text

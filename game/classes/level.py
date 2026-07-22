@@ -25,21 +25,19 @@ EDIBLE_COOLDOWN_PER_LEVEL = 0.2
 
 
 class Level:
+    """Un niveau du jeu affiché au premier plan sur une surface.
 
-    """"
-    Un level affiché sur une surface
-    Quand on le lance, il faut le mettre sur le screen. On retire tout du sceen
-    Et le level passe au premier plan
-
-    Chaque level possede x pacgums qu'on prend depuis le fichier config
-    Chaque level possede 4 super pacgums aux 4 coins
-    Chaque levle a 4 ghost aux 4 coins
+    Chaque niveau possède un labyrinthe, un nombre de pacgums issu du
+    fichier de configuration, quatre super pacgums et quatre fantômes
+    placés dans les coins.
     """
+
     def __init__(self, width: int, height: int, screen: pygame.Surface,
                  seed: int, number_pacgum: int,
                  points_per_pacgum: int, points_per_super_pacgum: int,
                  points_per_ghost: int, level_max_time: int,
                  curr_level: int, last_level: int) -> None:
+        """Génère le labyrinthe, les pacgums, Pacman et les fantômes."""
         self.screen = screen
 
         try:
@@ -72,17 +70,19 @@ class Level:
 
         self.start_time = pygame.time.get_ticks()
 
-    """
-    Return -1 si le screen doit etre quitté
-    Return 0 si le player a perdu
-    Return 1 si le lvl est gagné
-
-    Touches:
-     Les fleches / autres pour bouger
-     espace -> Cheater mode. On passe en mode tricheur
-     Appuyer sur espace = passer au niveau suivant
-    """
     def play(self, player: Player) -> int:
+        """Déroule la boucle de jeu du niveau.
+
+        Les flèches déplacent Pacman, espace passe au niveau suivant
+        (mode tricheur) et échap met le jeu en pause.
+
+        Args:
+            player: joueur dont on suit le score et les vies.
+
+        Returns:
+            -1 si la fenêtre doit être quittée, 0 si le joueur a perdu,
+            1 si le niveau est gagné.
+        """
         clock: pygame.time.Clock = pygame.time.Clock()
 
         if not self.waiting_screen(player):
@@ -148,23 +148,21 @@ class Level:
         finally:
             self.mixer.stop_gameplay()
 
-    """
-    Etat sonore de fond des fantomes:
-     - normal      -> sirene de base (#01)
-     - vulnerables -> son bleu (#08)
-     - clignotement -> son bleu/blanc de fin (#03)
-    """
     def ghost_sound_state(self) -> str:
+        """Retourne l'état sonore de fond des fantômes.
+
+        Returns:
+            "revive" pendant le retour au repaire, "frightened" quand
+            les fantômes sont vulnérables, "siren" sinon.
+        """
         if any(ghost.is_reviving() for ghost in self.ghosts):
             return "revive"
         if any(ghost.is_edible() for ghost in self.ghosts):
             return "frightened"
         return "siren"
 
-    """
-    Verifie les collisions avec fantome
-    """
     def check_col_with_ghost(self, player: Player) -> int:
+        """Vérifie les collisions entre Pacman et les fantômes."""
         for ghost in self.ghosts:
             if ghost is None or self.pacman is None:
                 return -1
@@ -174,10 +172,17 @@ class Level:
                     return ret
         return 1
 
-    """
-    Gère les collisions avec les fantomes
-    """
     def coll_with_ghost(self, player: Player, ghost: GhostPlayer) -> int:
+        """Gère une collision entre Pacman et un fantôme.
+
+        Args:
+            player: joueur qui perd une vie ou gagne des points.
+            ghost: fantôme touché par Pacman.
+
+        Returns:
+            -1 si la fenêtre doit être quittée, 0 si le joueur n'a plus
+            de vie, 1 sinon.
+        """
         if ghost.movement is None:
             return -1
         if not ghost.is_edible() and ghost.movement.can_move():
@@ -198,6 +203,7 @@ class Level:
         return 1
 
     def reset_pacman(self) -> None:
+        """Replace Pacman au centre du labyrinthe."""
         cell_size = self.maze.get_cell_size()
         self.pacman = PacmanPlayer(self.maze.get_center_maze(),
                                    self.maze.get_pacman_size(),
@@ -205,6 +211,10 @@ class Level:
                                    self.maze.is_open)
 
     def reset_ghosts(self) -> None:
+        """Recrée les quatre fantômes avec leur cerveau et leur vitesse.
+
+        Les vitesses et l'agressivité augmentent avec le niveau courant.
+        """
         cell_size = self.maze.get_cell_size()
 
         blinky_speed = cell_size * min(
@@ -244,12 +254,12 @@ class Level:
                                            self.maze.get_pacman_size(),
                                            movement, brain))
 
-    """
-    Pacman essaie de manger
-    Si Il mange son xp est augmentée
-    Si C'est un super pacgum Les fantomes deviennet vulnérable
-    """
     def try_eat(self, player: Player) -> None:
+        """Fait manger un pacgum à Pacman et applique ses effets.
+
+        Le score du joueur augmente et, si c'est un super pacgum, les
+        fantômes deviennent vulnérables et ralentissent.
+        """
         if self.pacman is None:
             return
         before = self.pacgums.number_pacgums
@@ -275,6 +285,11 @@ class Level:
                     ghost.movement.speed = (ghost.movement.normal_speed * 0.6)
 
     def play_death_animation(self, player: Player) -> bool:
+        """Joue l'animation de mort de Pacman jusqu'à sa fin.
+
+        Returns:
+            False si la fenêtre a été fermée, True sinon.
+        """
         if self.pacman is None:
             return False
         death = self.pacman.animations["death"]
@@ -299,9 +314,10 @@ class Level:
         return True
 
     def waiting_screen(self, player: Player) -> bool:
-        """
-        Ecran d'attente. Tant que l'utilisateur
-        n'appuie pas sur une touche, on attend
+        """Affiche un écran d'attente jusqu'à l'appui d'une touche.
+
+        Returns:
+            False si la fenêtre a été fermée, True sinon.
         """
         if self.pacman is None:
             return False
@@ -337,18 +353,13 @@ class Level:
         return False
 
     def show_information(self, player: Player) -> None:
-        """
-        Affiche les informations en bas du lab
-        """
+        """Affiche les informations de partie sous le labyrinthe."""
         font = pygame.font.SysFont(None, 20)
 
         y = self.maze.get_end_surface()
 
         def put_message(message: str, position: tuple[int, int]) -> None:
-            """
-            Nested fonction pour afficher un message a une
-            position donnée
-            """
+            """Affiche un message à une position donnée."""
             text = font.render(
                 message,
                 True,
@@ -367,6 +378,7 @@ class Level:
 
     # return en seconde le temps écoulé depuis le début du niveau
     def get_time_s(self) -> int:
+        """Retourne le temps écoulé depuis le début du niveau."""
         elapsed_time: int = pygame.time.get_ticks() - self.start_time
         elapsed_time = elapsed_time // 1000
         return elapsed_time

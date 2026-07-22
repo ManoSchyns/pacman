@@ -17,8 +17,10 @@ ColorKey = tuple[int, int, int] | int | pygame.Color | None
 
 
 class SpriteSheet:
+    """Charge une planche de sprites et en extrait des images."""
+
     def __init__(self, filename: str) -> None:
-        """Load the sheet."""
+        """Charge la planche depuis le fichier donné."""
         try:
             self.sheet = pygame.image.load(filename).convert()
         except pygame.error as e:
@@ -27,7 +29,7 @@ class SpriteSheet:
 
     def image_at(self, rectangle: RectLike,
                  colorkey: ColorKey = None) -> pygame.Surface:
-        """Load a specific image from a specific rectangle."""
+        """Retourne l'image contenue dans le rectangle donné."""
         # Loads image from x, y, x+offset, y+offset.
         rect = pygame.Rect(rectangle)
         image = pygame.Surface(rect.size).convert()
@@ -40,12 +42,12 @@ class SpriteSheet:
 
     def images_at(self, rects: list[RectLike],
                   colorkey: ColorKey = None) -> list[pygame.Surface]:
-        """Load a whole bunch of images and return them as a list."""
+        """Retourne la liste des images des rectangles donnés."""
         return [self.image_at(rect, colorkey) for rect in rects]
 
     def load_strip(self, rect: RectLike, image_count: int,
                    colorkey: ColorKey = None) -> list[pygame.Surface]:
-        """Load a whole strip of images, and return them as a list."""
+        """Retourne une bande d'images alignées horizontalement."""
         tups: list[RectLike] = [
             (rect[0] + rect[2] * x, rect[1], rect[2], rect[3])
             for x in range(image_count)

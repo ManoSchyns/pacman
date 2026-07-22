@@ -26,6 +26,7 @@ GHOST_COLORS = {
 
 
 def build_animations(ghost: Ghost) -> dict[str, Animation]:
+    """Retourne les animations agrandies du fantôme par action."""
     return {
         direction: Animation(
             [
@@ -44,6 +45,15 @@ def draw(
     direction: str,
     font: pygame.font.Font,
 ) -> None:
+    """Dessine le fantôme, son nom et la frame courante.
+
+    Args:
+        screen: surface de rendu.
+        ghost: fantôme affiché.
+        animation: animation en cours de lecture.
+        direction: nom de l'action affichée.
+        font: police utilisée pour les textes.
+    """
     screen.fill(BACKGROUND)
     accent = GHOST_COLORS.get(ghost.COLOR, TEXT_COLOR)
     title = font.render(f"{ghost.name} ({ghost.COLOR})", True, accent)
@@ -66,6 +76,7 @@ def draw(
 
 
 def main() -> None:
+    """Lance la fenêtre de démonstration des animations de fantômes."""
     pygame.init()
     pygame.display.set_mode((1, 1), pygame.HIDDEN)
     ghosts = [

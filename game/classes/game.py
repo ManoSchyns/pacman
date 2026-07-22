@@ -14,11 +14,7 @@ FONT_PATH_R = ROOT / "game" / "srcs" / "ARCADE_R.TTF"
 
 
 class Game:
-    """
-    A chaque boucle du jeu
-    on affiche le level x, on fait augmenter les points,
-    le level s'occupe de tout ? Non je pense pas
-    """
+    """Enchaîne les niveaux d'une partie et suit le score du joueur."""
 
     def __init__(self, level_list: list[tuple[int, int]],
                  pacgum: int,
@@ -28,7 +24,7 @@ class Game:
                  lives: int,
                  seed: int,
                  level_max_time: int) -> None:
-
+        """Initialise la configuration de la partie et les polices."""
         self.level_list = level_list
         self.points_per_pacgum = points_per_pacgum
         self.points_per_super_pacgum = points_per_super_pacgum
@@ -51,6 +47,11 @@ class Game:
         self.mixer = get_mixer()
 
     def play(self, screen: pygame.Surface) -> bool:
+        """Joue les niveaux les uns après les autres puis l'écran de fin.
+
+        Returns:
+            False si la fenêtre a été fermée, True sinon.
+        """
         # lancer le level x, avec une config x
         # Jouer en faisant augmenter les points
         end_message: str = "Game Over"
@@ -83,11 +84,18 @@ class Game:
             return False
         return True
 
-    """
-    Affiche l'écran de fin avec le score du joueur
-    et Recupère le nom de l'utilisateur
-    """
     def show_end_screen(self, message: str, screen: pygame.Surface) -> bool:
+        """Affiche l'écran de fin et récupère le nom du joueur.
+
+        Le score est enregistré une fois qu'un nom valide est saisi.
+
+        Args:
+            message: message de fin de partie à afficher.
+            screen: surface sur laquelle dessiner.
+
+        Returns:
+            False si la fenêtre a été fermée, True sinon.
+        """
         screen.fill((0, 0, 0))
         if "Over" in message:
             self.mixer.play_game_over()
@@ -135,6 +143,7 @@ class Game:
     def end_screen_view(self, message: str, screen: pygame.Surface,
                         validity: tuple[bool, str],
                         text_input: TextInput) -> None:
+        """Dessine l'écran de fin, le score, la saisie et les erreurs."""
         screen.fill((0, 0, 0))
         last_padding_y: int = 150
 
@@ -145,6 +154,7 @@ class Game:
         def put_text(font: pygame.Font, text_value: str,
                      colors: tuple[int, int, int],
                      postition: tuple[int, int]) -> None:
+            """Affiche un texte centré sur une position donnée."""
             text = font.render(text_value, True, colors)
             text_rect = text.get_rect(
                 center=postition

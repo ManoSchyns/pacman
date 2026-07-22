@@ -26,6 +26,15 @@ Placed = tuple[pygame.Rect, pygame.Rect, pygame.Surface]
 def layout_sprites(
     sprites: list[tuple[pygame.Rect, pygame.Surface]], width: int
 ) -> tuple[list[Placed], int]:
+    """Répartit les sprites en lignes dans la largeur disponible.
+
+    Args:
+        sprites: couples (rectangle, image) à afficher.
+        width: largeur maximale d'une ligne.
+
+    Returns:
+        les sprites placés et la hauteur totale du contenu.
+    """
     placed: list[Placed] = []
     x, y = PADDING, PADDING
     row_height = 0
@@ -46,6 +55,7 @@ def layout_sprites(
 def draw(
     screen: pygame.Surface, placed: list[Placed], font: pygame.font.Font
 ) -> None:
+    """Dessine les sprites et la barre d'infos du sprite survolé."""
     screen.fill(BACKGROUND)
     mouse = pygame.mouse.get_pos()
     hovered: tuple[int, pygame.Rect] | None = None
@@ -71,6 +81,7 @@ def draw(
 
 
 def main() -> None:
+    """Lance la visionneuse de planche de sprites."""
     path = sys.argv[1] if len(sys.argv) > 1 else str(DEFAULT_SHEET)
     pygame.init()
     pygame.display.set_mode((1, 1), pygame.HIDDEN)

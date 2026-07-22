@@ -30,6 +30,16 @@ CYAN = (0, 255, 255)
 
 def blend(first: tuple[int, int, int], second: tuple[int, int, int],
           amount: float) -> tuple[int, int, int]:
+    """Retourne le mélange de deux couleurs selon un ratio.
+
+    Args:
+        first: couleur de départ.
+        second: couleur d'arrivée.
+        amount: ratio de mélange entre 0.0 et 1.0.
+
+    Returns:
+        La couleur interpolée.
+    """
     return (int(first[0] + (second[0] - first[0]) * amount),
             int(first[1] + (second[1] - first[1]) * amount),
             int(first[2] + (second[2] - first[2]) * amount))
@@ -37,6 +47,8 @@ def blend(first: tuple[int, int, int], second: tuple[int, int, int],
 
 @dataclass
 class ParadeGhost:
+    """Fantôme animé de la parade du menu principal."""
+
     chase: Animation
     frightened: Animation
     eaten: Animation
@@ -46,6 +58,8 @@ class ParadeGhost:
 
 @dataclass
 class ScorePopup:
+    """Points affichés brièvement quand un fantôme est mangé."""
+
     x: float
     y: float
     value: int
@@ -53,6 +67,7 @@ class ScorePopup:
 
 
 class ChaseParade:
+    """Animation de fond où Pacman poursuit et fuit les fantômes."""
 
     HUNT_SPEED = 220.0
     FLEE_SPEED = 150.0
@@ -65,6 +80,7 @@ class ChaseParade:
 
     def __init__(self, width: int, y: int, size: int,
                  pacman: Pacman, ghosts: list[Ghost]) -> None:
+        """Prépare les animations de la parade et lance la poursuite."""
         self.width = width
         self.y = y
         self.size = size
@@ -85,10 +101,12 @@ class ChaseParade:
         self._start_hunt()
 
     def _scaled(self, ghost: Ghost, action: str) -> list[pygame.Surface]:
+        """Retourne les images d'une action du fantôme mises à l'échelle."""
         return [pygame.transform.scale(frame, (self.size, self.size))
                 for frame in ghost.frames(action)]
 
     def _start_hunt(self) -> None:
+        """Replace les personnages pour la phase de poursuite."""
         self.phase = "hunt"
         self.pac_x = float(self.width + 60)
         self.dots = list(range(40, self.width - 30, 46))
@@ -97,6 +115,7 @@ class ChaseParade:
             ghost.x = self.pac_x + self.LEAD + index * self.GAP
 
     def _start_flee(self) -> None:
+        """Replace les personnages pour la phase de fuite des fantômes."""
         self.phase = "flee"
         self.eaten = 0
         base = -4 * self.GAP - 60
@@ -106,6 +125,11 @@ class ChaseParade:
         self.pac_x = base - self.LEAD
 
     def update(self, dt: float) -> None:
+        """Fait avancer la parade et alterne poursuite et fuite.
+
+        Args:
+            dt: temps écoulé depuis la dernière image, en secondes.
+        """
         self.pac_left.update(dt)
         self.pac_right.update(dt)
         for ghost in self.ghosts:
@@ -141,6 +165,7 @@ class ChaseParade:
         self.popups = [p for p in self.popups if p.age < self.POPUP_LIFE]
 
     def draw(self, screen: pygame.Surface, font: pygame.font.Font) -> None:
+        """Dessine les pacgums, les personnages et les points gagnés."""
         if self.phase == "hunt":
             for dot in self.dots:
                 pygame.draw.circle(screen, DOT_COLOR, (dot, self.y), 3)
@@ -175,10 +200,12 @@ class ChaseParade:
 
 
 class MainMenu:
+    """Menu principal animé du jeu."""
 
     ITEMS = ("START GAME", "HIGHSCORES", "INSTRUCTIONS", "EXIT")
 
     def __init__(self, screen: pygame.Surface) -> None:
+        """Charge les ressources et prépare les animations du menu."""
         self.screen = screen
         self.width, self.height = screen.get_size()
 
@@ -227,12 +254,19 @@ class MainMenu:
         self.mixer = get_mixer()
 
     def _start_music(self) -> None:
+        """Lance la musique du menu."""
         self.mixer.play_music()
 
     def _stop_music(self) -> None:
+        """Arrête la musique du menu."""
         self.mixer.stop_music()
 
     def run(self) -> str:
+        """Affiche le menu jusqu'à ce qu'un choix soit fait.
+
+        Returns:
+            "start" pour lancer une partie, "quit" pour quitter.
+        """
         clock: pygame.time.Clock = pygame.time.Clock()
         self._start_music()
         result: str | None = None
@@ -266,6 +300,14 @@ class MainMenu:
         return result
 
     def _handle_key(self, key: int) -> str | None:
+        """Déplace la sélection ou valide l'entrée choisie.
+
+        Args:
+            key: code de la touche pressée.
+
+        Returns:
+            Le résultat du menu, ou None si la navigation continue.
+        """
         if key in (pygame.K_UP, pygame.K_w):
             self.selected = (self.selected - 1) % len(self.ITEMS)
         elif key in (pygame.K_DOWN, pygame.K_s):
@@ -275,6 +317,7 @@ class MainMenu:
         return None
 
     def _hover(self, position: tuple[int, int]) -> bool:
+        """Sélectionne l'entrée survolée et indique si elle existe."""
         for index, rect in enumerate(self.item_rects):
             if rect.collidepoint(position):
                 self.selected = index
@@ -282,6 +325,11 @@ class MainMenu:
         return False
 
     def _activate(self) -> str | None:
+        """Exécute l'action de l'entrée sélectionnée.
+
+        Returns:
+            "start", "quit", ou None après l'affichage d'une page.
+        """
         label = self.ITEMS[self.selected]
         if label == "START GAME":
             return "start"
@@ -304,6 +352,15 @@ class MainMenu:
         return None
 
     def _show_page(self, title: str, lines: tuple[str, ...]) -> bool:
+        """Affiche une page d'information jusqu'à un retour arrière.
+
+        Args:
+            title: titre affiché en haut de la page.
+            lines: lignes de texte à afficher.
+
+        Returns:
+            False si la fenêtre a été fermée, True sinon.
+        """
         clock: pygame.time.Clock = pygame.time.Clock()
         back_keys = (pygame.K_ESCAPE, pygame.K_RETURN, pygame.K_BACKSPACE)
         while True:
@@ -340,6 +397,7 @@ class MainMenu:
             pygame.display.flip()
 
     def _draw(self) -> None:
+        """Dessine l'ensemble du menu principal."""
         self._draw_background()
         self._draw_title()
         self._draw_items()
@@ -357,6 +415,7 @@ class MainMenu:
             center=(self.width // 2, self.height - 36)))
 
     def _draw_background(self) -> None:
+        """Dessine le fond scintillant, la parade et les bordures."""
         self.screen.fill((0, 0, 0))
         for x, y, phase, radius in self.twinkles:
             progress = (self.time * 0.45 + phase) % 1.0
@@ -375,6 +434,7 @@ class MainMenu:
                          3, border_radius=10)
 
     def _draw_title(self) -> None:
+        """Dessine le logo avec son animation de chute et son halo."""
         progress = pytweening.easeOutBounce(min(self.time / 1.15, 1.0))
         start_y = -self.logo.get_height()
         y = start_y + (self.title_y - start_y) * progress
@@ -389,6 +449,7 @@ class MainMenu:
         self.screen.blit(self.logo, rect)
 
     def _draw_items(self) -> None:
+        """Dessine les entrées du menu et le curseur de sélection."""
         self.item_rects = []
         base_y = int(self.height * 0.435)
         for index, label in enumerate(self.ITEMS):

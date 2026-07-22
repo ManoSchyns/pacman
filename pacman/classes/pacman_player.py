@@ -20,10 +20,21 @@ KEY_DIRECTIONS: dict[int, str] = {
 
 
 class PacmanPlayer:
+    """Pacman contrôlé par le joueur, avec ses animations."""
 
     def __init__(self, position: tuple[int, int], size: int,
                  speed: float, cell_size: int,
                  is_open: Callable[[tuple[int, int], str], bool]) -> None:
+        """Charge les animations et prépare le moteur de déplacement.
+
+        Args:
+            position: position de départ en pixels.
+            size: taille du sprite en pixels.
+            speed: vitesse de déplacement en pixels par seconde.
+            cell_size: taille d'une case en pixels.
+            is_open: fonction indiquant si une case est ouverte vers
+                une direction.
+        """
         self.sprite = Pacman(str(SHEET_PATH), size)
         self.animations = {
             action: Animation(self.sprite.frames(action),
@@ -37,6 +48,7 @@ class PacmanPlayer:
         self.rect = self.animation.current_frame().get_rect(center=position)
 
     def handle_input(self) -> None:
+        """Lit les flèches du clavier et demande la direction voulue."""
         keys = pygame.key.get_pressed()
         for key, direction in KEY_DIRECTIONS.items():
             if keys[key]:
@@ -44,6 +56,11 @@ class PacmanPlayer:
                 return
 
     def move(self, dt: float) -> None:
+        """Déplace Pacman et met à jour l'animation de sa direction.
+
+        Args:
+            dt: temps écoulé depuis la frame précédente, en secondes.
+        """
         previous = self.movement.current_direction
         self.rect.center = self.movement.update(dt)
 
@@ -54,6 +71,7 @@ class PacmanPlayer:
             self.animation.update(dt)
 
     def draw(self, screen: pygame.Surface) -> None:
+        """Dessine la frame courante de Pacman sur l'écran."""
         screen.blit(
             self.animation.current_frame(),
             self.rect
