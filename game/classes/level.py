@@ -396,6 +396,8 @@ class Level:
         return elapsed_time
 
     def freeze_ghost(self) -> None:
+        """Permet de bloquer les fantomes sur
+        place et desactive leurs collisions"""
         for ghost in self.ghosts:
             if ghost.movement is not None:
                 if ghost.movement.dead_cooldown == 99999:
@@ -404,6 +406,8 @@ class Level:
                     ghost.movement.dead_cooldown = 99999
 
     def maze_with_cheater_mode(self, dt: float) -> None:
+        """Change les couleurs du labyrinthe aleatoirement
+        lorsque le mode cheater est actif"""
         self.timer_cheater_mode += dt
 
         if self.timer_cheater_mode >= 1.0:
