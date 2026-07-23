@@ -49,6 +49,9 @@ class Game:
     def play(self, screen: pygame.Surface) -> bool:
         """Joue les niveaux les uns après les autres puis l'écran de fin.
 
+        Une pause suivie d'un retour au menu abandonne la partie sans
+        passer par l'écran de fin.
+
         Returns:
             False si la fenêtre a été fermée, True sinon.
         """
@@ -71,6 +74,8 @@ class Game:
             exit_value = level.play(self.player)
             if exit_value == -1:
                 return False
+            if exit_value == -2:
+                return True
             if exit_value == 0:
                 running = False
             else:
